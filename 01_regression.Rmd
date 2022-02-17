@@ -1,0 +1,316 @@
+---
+title: "Korrelation und Regression"
+author: "Lukas Stammler"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_height: 6
+    fig_width: 6
+    highlight: pygments
+    theme: yeti
+    code_download: false
+    toc: yes
+    number_sections: yes
+    toc_float: yes
+bibliography: book.bib
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+library(tidyverse)
+library(jmv)
+library(knitr)
+library(kableExtra)
+library(openintro)
+library(patchwork)
+
+data(COL)
+```
+
+# Sicherheitsgurt {.tabset}  
+
+Quelle: @Agresti2018, Ex. 3.32  
+
+**Wie gut sind Sicherheitsgurte im Auto?** Im Jahre 2013 haben das US Dept. of Transportation
+und das Insurance Institute for Highway Sefety Daten erhoben. Die Ergebnisse zeigten, dass für jedes zusätzliche Prozent, das den Sicherheitsgürtel benutzt, die Anzahl der tödlichen Unfälle pro 100'000 Autofahrer:innen um 24.45 abnimmt. $\hat{y}$ ist die vorhergesagte Anzahl tödlicher Unfälle pro 100'000 Autofahrer:innen im Jahr 2013 und $x$ ist der Anteil der Sicherheitsgurt-Nutzer:innen.   
+
+## Aufgabe  
+
+a) Wie gross ist die Steigung $\beta_1$ in unserem Modell $\hat{y} = \beta_0 + \beta_1 x$?  
+b) Der Achsenabschnitt $\beta_0$ ist 32.42. Wieviele tödliche Unfälle pro 100'000 Personen sagt unser Modell voraus für 
+
+   i) einen Staat, in dem niemand einen Sicherheitsgurt verwendet? 
+   ii) für eine Staat, in dem 74% der Autofahrer:innen einen Sicherheitsgurt verwenden? 
+   iii) und für einen Staat, in dem 100% der Autofahrer:innen einen Sicherheitsgurt verwenden?   
+   
+## Lösung  
+
+a) $\beta_1 = -24.45$  
+
+b) Siehe Code
+
+```{r, echo=TRUE}
+## Einfaches lineares Regressionsmodell ----------------------------------------
+beta0 <- 32.42
+beta1 <- -24.45
+
+## b) i) -----------------------------------------------------------------------
+beta0 + beta1 * 0
+
+## b) ii) ----------------------------------------------------------------------
+beta0 + beta1 * .74
+
+## b) iii) ---------------------------------------------------------------------
+beta0 + beta1 * 1
+```
+
+<br/>
+
+# Cerealien {.tabset}  
+
+Quelle: @Agresti2018, Ex. 3.33
+
+**Ist der Zuckergehalt in Frühstückscerealien ein guter Prädiktor für den Natriumgehalt?** 
+Die Abbildung unten zeigt das Ergebnis einer Regressionsanalyse für die unabhängige 
+Variable $x$ = sugar und die abhängige Variable $y$ = sodium (Natrium) für 20 beliebte 
+Frühstückscerealien. 
+
+```{r, fig.align='center', fig.dim=c(5, 4)}
+cereal <- read_csv("./data/cereal.csv")
+
+ggplot(cereal, aes(x = Zucker, y = Natrium)) +
+  geom_point(size = 3, color = "steelblue", alpha = .6) +
+  geom_smooth(method = "lm", color = "darkgreen", se = FALSE) +
+  xlab("Zucker (g)")+
+  ylab("Natrium (mg)") +
+  theme_classic()
+
+cereal_lm <- lm(Natrium ~ Zucker, data = cereal)
+summary(cereal_lm)
+```
+
+## Aufgabe  
+
+a) Nach welchem Kriterium wurde die grüne Linie im Streudiagramm konstruiert?   
+b) Würden Sie den Zuckergehalt als guten Prädiktor für den Natriumgehalt von 
+Frühstückscerealien bezeichnen? Begründen Sie.
+
+## Lösung  
+
+a) Die Linie wurde so berechnet, dass die Quadratsumme der Residuen minimal ist.  
+b) Nein. $R^2$ ist nahezu 0 (0.54%). Das bedeutet, dass $x$ nur 0.54% der Variabilität 
+von $y$ voraussagen kann. Mit einem $p$ von 0.942 unterscheidet sich die Steigung 
+$\beta_1$ nicht signifikant von 0.  
+
+<br/>
+
+# Mountainbike {.tabset}
+
+Quelle: @Agresti2018, Ex. 3.41
+
+**Besteht ein Zusammenhang zwischen dem Gewicht und dem Preis eines Mountainbikes?** 
+Folgende Angaben sind im Datensatz `mountainbike.csv` gespeichert: Preis in US$, Gewicht in kg 
+und Art der Federung (FU = Vollfederung, FE = Vordergabelfederung). Daten aus *Consumer Reports, Juni 1999*.   
+
+```{r}
+bikes <- read_csv("./data/mountainbikes.csv")
+
+## pounds in kg umwandeln -----------------------------------------------------
+# bikes$Gewicht <- round(bikes$Gewicht * 0.453592, 1)
+# write_csv(bikes, "./data/mountainbikes.csv")
+
+# summary(bikes)
+```
+
+
+## Aufgabe
+
+a) Erstellen Sie ein Streudiagramm für Preis und Gewicht.  
+b) Berechnen Sie das Regressionsmodell und interpretieren Sie die Steigung $\beta_1$.   
+c) Sie möchten ein Mountainbike mit einem Gewicht von 14 kg kaufen. Welchen Preis 
+das Modell für ein solches Fahrrad voraus?  
+d) Ist das Gewicht ein zuverlässiger Prädiktor für den Preis eines Mountainbikes? 
+
+## Lösung  
+
+a) Erstellen Sie ein Streudiagramm für Preis und Gewicht.  
+
+```{r, echo=TRUE, fig.align='center', fig.dim=c(5, 4)}
+plot(bikes$Gewicht, bikes$Preis,
+     xlab = "Gewicht (kg)",
+     ylab = "Preis (US$)")
+abline(lm(Preis ~ Gewicht, data = bikes), col = "darkgreen")
+```
+
+* *Schwerere Bikes sind preiswerter als leichtere Bikes. Es besteht ein eher schwacher negativer linearer Zusammenhang zwischen Preis und Gewicht eines Mountainbikes*
+
+b) Berechnen Sie das Regressionsmodell und interpretieren Sie die Steigung $\beta_1$.  
+
+```{r, echo=TRUE}
+bikes_lm <- lm(Preis ~ Gewicht, data = bikes)
+summary(bikes_lm)
+```
+
+$$\widehat{Preis} = 1932.67 - 91.69 \times ~Gewicht$$
+* *Mit jedem kg Gewicht, das ein Mountainbike leichter ist, steigt der Preis um 91.69 US$.*   
+
+c) Sie möchten ein Mountainbike mit einem Gewicht von 14 kg kaufen. Welchen Preis sagt das Modell für ein solches Fahrrad voraus?  
+
+```{r}
+Gewicht <- 14
+Preis <- 1932.67 - 91.69 * Gewicht
+print(Preis)
+```
+
+d) Ist das Gewicht ein zuverlässiger Prädiktor für den Preis eines Mountainbikes? 
+
+* *Das Gewicht ist ein schwacher Prädiktor für den Preis. $R^2$ ist 0.1072, d.h. die Variable Gewicht kann nur etwa 10% der Variabilität der Variable Preis erklären.*
+
+
+# Mountainbike 2 {.tabset}
+
+Quelle: @Agresti2018, Ex. 3.42
+
+Wir arbeiten mit den Daten aus der vorigen Übung. Der Datensatz enthält in der Variable Typ Angaben zur Federung: FU = Vollfederung, FE = Vordergabelfederung. 
+
+Die Abbildung zeigt ein Streudiagramm, in dem die Daten für Federung:FU und Federung:FE getrennt dargestellt sind.  
+
+```{r, fig.align='center', fig.dim=c(5, 4)}
+ggplot(bikes, aes(x = Gewicht, y = Preis, color = Federung)) +
+  geom_point(size = 3) +
+  xlab("Gewicht (kg)") +
+  ylab("Preis (US$)") +
+  theme_classic()
+```
+
+
+## Aufgabe  
+
+a) Erkennen Sie einen linearen Zusammenhang? Ist die einfache Regressionslinie aus der ersten Mountainbike-Aufgabe die beste Art, die Daten darzustellen? Gibt es eine bessere Art, die Daten zu modellieren?   
+b) Erstellen Sie für die beiden Federungstypen FE und FU je ein separates Modell und fassen Sie ihr Ergebnis zusammen.   
+c) Der Korrelationskoeffizient für alle Daten ist `r round(cor(bikes$Preis, bikes$Gewicht), 3)`. Vergleichen Sie diesen Korrelationskoeffizienten mit den Korrelationskoeffizienten, die Sie separat für die beiden Gruppen FU und FE berchnet haben.   
+
+## Lösung   
+
+a) Erkennen Sie einen linearen Zusammenhang? Ist die einfache Regressionslinie aus der ersten Mountainbike-Aufgabe die beste Art, die Daten darzustellen? Gibt es eine bessere Art, die Daten zu modellieren?   
+
+```{r, fig.align='center', fig.dim=c(5, 4)}
+ggplot(bikes, aes(x = Gewicht, y = Preis, color = Federung)) +
+  geom_point(size = 3) +
+  xlab("Gewicht (kg)") +
+  ylab("Preis (US$)") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_classic()
+```
+
+* *Es besteht für beide Gruppen ein negativer linearer Zusammenhang. Im Vergleich zur Regressionsgeraden für alle Daten gemeinsam liegen die Punkte nahe an der Geraden, was für einen moderaten bis starken Zusammenhang spricht. Man könnte für beide Federungstypen separate Regressionsmodelle erstellen*
+
+b) Erstellen Sie für die beiden Federungstypen FE und FU je ein separates Modell und fassen Sie ihr Ergebnis zusammen.  
+
+```{r, echo=TRUE}
+## Teildatensätze nach Federungstyp erstellen ----------------------------------
+bikes_FE <- subset(bikes, Federung == "FE")
+bikes_FU <- subset(bikes, Federung == "FU")
+
+## Einfache lineare Regressionsmodelle erstellen -------------------------------
+bikes_FE_lm <- lm(Preis ~ Gewicht, data = bikes_FE)  
+bikes_FU_lm <- lm(Preis ~ Gewicht, data = bikes_FU)
+
+## Regressionsoutput -----------------------------------------------------------
+summary(bikes_FE_lm)
+summary(bikes_FU_lm)
+```
+
+* Regressionsmodell für den Federungstyp FE    
+
+$$\widehat{Preis} = 2146.26 - 121.75 \times ~Gewicht$$
+
+* Regressionsmodell für den Federungstyp FU   
+
+$$\widehat{Preis} = 2441.90 - 97.70 \times ~Gewicht$$
+
+* *Für beide Modelle unterscheidet sich die Steigung $\beta_1$ signifikant von 0 ($p$ < 0.05). Für Typ FE ist $R^2$ = 0.788 und für Typ FU ist $R^2$ = 0.888. Damit sind diese Modelle wesentlich zuverlässiger für die Vorhersage des Preises für ein Mountainbike nach dem Gewicht, als das erste Modell.*   
+
+
+c) Der Korrelationskoeffizient für alle Daten ist `r round(cor(bikes$Preis, bikes$Gewicht), 3)`. Vergleichen Sie diesen Korrelationskoeffizienten mit den Korrelationskoeffizienten, die Sie separat für die beiden Gruppen FU und FE berechnet haben.   
+
+```{r, echo=TRUE}
+cor(bikes_FE$Preis, bikes_FE$Gewicht)
+cor(bikes_FU$Preis, bikes_FU$Gewicht)
+```
+
+* *Die Korrelation mit allen Daten ist mit $r$ = `r round(cor(bikes$Preis, bikes$Gewicht), 3)` schwach. Die Korrelationen zwischen Gewicht und Preis für die Mountainbikes getrennt nach Federungstyp sind stark.*   
+
+**Hinweis:** Dieses Beispiel könnte auch mit einem multiplen linearen Regressionsmodell analysiert werden.
+
+$$\widehat{Preis} = \beta_0 + \beta_1 \times Gewicht + \beta_2 \times Federung$$
+
+```{r}
+bikes_mlm <- lm(Preis ~ Gewicht + Federung, data = bikes)
+summary(bikes_mlm)
+```
+
+$$\widehat{Preis} = 2109.64 - 119.16 \times Gewicht + \beta_2 \times 641.28$$
+
+* *Interpretation: Wenn ein Mountainbike ein kg leichter wird, steigt der Preis um durchschnittlich 119.16 US Dollar, $\beta_1$ = 119.16, $p$ < 0.001. Ein vollgefedertes Mountainbike ist im Durchschnitt um 661 US Dollar teurer, als ein Mountainbike mit nur Vordergabelfederung $\beta_2$ = 641.28, $p$ < 0.001. Dieses Modell erklärt 94% der Variabilität der Preise von Mountainbikes, $R_{adj}^2$ = 0.942.*   
+
+<br/>
+
+# Benzinverbrauch {.tabset}  
+
+Quelle: @Agresti2018, Ex. 3.43   
+
+Das Streudiagramm zeigt den Zusammenhang zwischen Benzinverbrauch in l/km und Fahrgeschwindigkeit in km/h für einen Mittelklassewagen. 
+
+```{r, fig.align='center', fig.dim=c(5, 4)}
+# benzin <- read_csv("./data/fuel.csv")
+# 
+# benzin <- benzin %>% 
+#   mutate(
+#     kmh = velocity * 1.60934,   # mph in kmh
+#     kml = mpg * 0.425144        # mpg in km pro l
+#   ) %>% 
+#   select(kmh, kml)
+# write_csv(benzin, "./data/benzin.csv")
+
+benzin <- read_csv("./data/benzin.csv")
+
+ggplot(benzin, aes(x = kmh, y = kml)) +
+  geom_smooth(method = "lm", color = "darkgreen", se = FALSE) +
+  geom_point(size = 3, color = "steelblue", alpha = 0.7) +
+  xlab("Geschwindigkeit (km/h)") +
+  ylab("Benzinverbrauch (l/km)") +
+  scale_x_continuous(breaks = seq(from = 0, to = 200, by = 20)) +
+  theme_minimal()
+```
+
+
+## Aufgabe  
+
+a) Der Korrelationskoeffizient für den Zusammenhang von Benzinverbrauch und Geschwindigkeit ist $r$ = 0.106. Ist der Korrelationskoeffizient ein gutes Mass, um diesen Zusammenhang zu beschreiben?   
+b) Eignet sich ein lineares Regressionsmodell, um den Zusammenhang zwischen Geschwindigkeit und Benzinverbrauch zu beschreiben?  
+c) Über welchen Unterbereich der Daten würden Sie es in Erwägung ziehen, ein lineares Regressionsmodell zu erstellen?  
+
+<br/>
+
+## Lösung  
+
+a) Der Korrelationskoeffizient für den Zusammenhang von Benzinverbrauch und Geschwindigkeit ist $r$ = 0.106. Ist der Korrelationskoeffizient ein gutes Mass, um diesen Zusammenhang zu beschreiben?  
+
+* *Das Streudiagramm zeigt einen nichtlinearen Zusammenhang zwischen Geschwindigkeit und Benzinverbrauch. Der Korrelationskoeffizient, der ein Mass für einen linearen Zusammenhang ist, hat in diesem Fall keine Aussagekraft.*
+
+b) Eignet sich ein lineares Regressionsmodell, um den Zusammenhang zwischen Geschwindigkeit und Benzinverbrauch zu beschreiben?  
+
+* *Da kein linearer Zusammenhang zwischen Geschwindigkeit und Benzinverbrauch besteht, ist ein lineares Regressionsmodell nicht geeignet.*   
+
+c) Über welchen Unterbereich der Daten würden Sie es in Erwägung ziehen, ein lineares Regressionsmodell zu erstellen?   
+
+* *Entweder über den Bereich zwischen 60 bis 140 km/h oder über den Bereich zwischen 5 bis 60 km/h. In diesen Bereichen ist der Zusammenhang annähernd linear*  
+
+<br/>
+
+
+# Referenzen  
