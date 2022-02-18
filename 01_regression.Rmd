@@ -30,6 +30,8 @@ library(patchwork)
 data(COL)
 ```
 
+Übungssammlung zu Korrelation und linearer Regression
+
 # Sicherheitsgurt {.tabset}  
 
 Quelle: @Agresti2018, Ex. 3.32  
@@ -312,5 +314,273 @@ c) Über welchen Unterbereich der Daten würden Sie es in Erwägung ziehen, ein 
 
 <br/>
 
+# Restaurant-Rating *R-Exams* {.tabset}  
+
+Quelle: @Agresti2018, Ex. 3.28   
+
+Zagat Restaurantführer publiziert Ratings von Restaurants für viele grosse Städte weltweit (www.zagat.com). Das Review für jedes Restaurant umfasst eine Beschreibung und ein 0-30 Punkterating für die Qualität der Speisen, Ausstattung (Dekor), Bedienung und der Preis für eine Mahlzeit inkl. einem Getränk. Für 31 Französische Restaurants in Boston hatte 2014 betrug das Rating für die Qualität der Speisen im Durchschnitt 24.55 Punkte mit einer Standardabweichung von 2.08 Punkten. Die Kosten in US Dollar betrugen im Durchschnitt 50.35 US Dollar mit einer Standardabweichung von 14.92 US Dollar. Das Regressionsmodell, das den Preis in Abhängigkeit von der Qualität der Speisen vorhersagt ist $\hat{y} = -70.04 + 4.90x$. Der Korrelationskoeffizient ist $r$ = 0.68.    
+
+```{r, fig.align='center', fig.dim=c(6, 5)}
+zagat <- read_csv("./data/Zagat_Boston.csv")
+
+french <- zagat %>% 
+  filter(Type == "French")
+
+ggplot(french, aes(x = Food, y = Cost)) +
+  geom_point(size = 3, color = "steelblue") +
+  xlab("Rating Qualität der Speisen") +
+  ylab("Preis (US Dollar)") +
+  ggtitle("Preis ~ Qualität, Boston French Restaurants (2014) ") +
+  theme_classic()
+
+french_lm <- lm(Cost ~ Food, data = french)
+# summary(french_lm)
+```
+
+## Aufgabe  
+
+a) Welche Kosten erwarten Sie für ein Essen im Restaurant mit dem i) tiefsten Rating für die Qualität der Speisen (21 Punkte), mit dem ii) höchsten Rating (28 Punkte).   
+b) Interpretieren Sie die Steigung des Regressionsmodells.  
+c) Interpretieren Sie die Korrelation.  
+d) Wie beurteilen Sie die Zuverlässigkeit des Modells?  
+e) Bonus: Zeigen Sie, wie die Steigung aus der Korrelation und den übrigen Angaben berechnet werden kann. 
+
+<br/>
+
+## Lösung  
+
+a) Welche Kosten erwarten Sie für ein Essen im Restaurant mit dem i) tiefsten Rating für die Qualität der Speisen (21 Punkte), mit dem ii) höchsten Rating (28 Punkte).   
+
+```{r, echo=TRUE}
+## a) i) -----------------------------------------------------------------------
+-70.04 + 4.90 * 21
+
+## a) ii) 
+-70.04 + 4.90 * 28
+```
+
+* *Wir erwarten, dass bei einem Rating der Speisequalität von 21 Punkten, eine Mahlzeit im Durchschnitt 32.82 US Dollar und bei einem Rating von 28 Punkten im Durchschnitt 67.17 US Dollar kostet.*   
+
+b) Interpretieren Sie die Steigung des Regressionsmodells.  
+
+* *Wenn die Qualität der Speisen um 1 Punkt steigt, steigt der Preis für eine Mahlzeit im Durchschnitt um 4.9 US Dollar.*   
+
+c) Interpretieren Sie die Korrelation.  
+
+* *Es besteht eine positive moderate lineare Korrelation zwischen dem Rating der Speisequalität und dem Preis für eine Mahlzeit.*   
+
+d) Wie beurteilen Sie die Zuverlässigkeit des Modells?  
+
+$$R^2 = r^2$$
+
+```{r, echo=TRUE}
+r <- 0.68
+r^2
+```
+
+* *Das Regressionsmodell erklärt 46.2% der Variabilität der Preise durch das Rating der Qualität der Speisen.*   
+
+e) Bonus: Zeigen Sie, wie die Steigung aus der Korrelation und den übrigen Angaben berechnet werden kann.  
+
+$$\beta_1 = \frac{s_y}{s_x}r$$
+
+```{r, echo=TRUE}
+sy <- 14.92
+sx <- 2.08
+r <- 0.68
+
+beta1 <- (sy/sx) * r
+print(beta1)
+```
+
+<br/>
+
+# Olympischer Weitsprung {.tabset}  
+
+Quelle: @Agresti2018, Ex. 3.45   
+
+Im Datensatz `jump_long.csv` sind die Siegerdistanzen im olympischen Weitsprung der Männer für die Jahre 1896 bis 2012 abgelegt. Das olympische Jahr ist in der Variablen `Year` und die Siegerdistanz in der Variablen `Meters` gespeichert.   
+
+```{r, fig.align='center', fig.dim=c(5, 5), eval=FALSE}
+long <- read_csv("./data/long_jump.csv")  
+
+long_lm <- lm(Meters ~ Year, data = long)
+# summary(long_lm)
+
+reg.eq <- "y = -20.5 + 0.0145x"
+r.sq <- paste("R^2 == 0.77")
+
+ggplot(long, aes(x = Year, y = Meters)) +
+  geom_smooth(method = "lm", color = "darkgreen", se = FALSE) +
+  geom_point(size = 3, color = "steelblue") +
+  ylab("Distanz (m)") +
+  xlab("Jahr") +
+  ggtitle("Siegerdistanzen Weitsprung Männer") +
+  annotate(geom = "text", x = 1980, y = 7, label = reg.eq, size = 5) +
+  annotate(geom = "text", x = 1980, y = 6.8, label = r.sq , size = 5, parse = TRUE) +
+  theme_minimal()
+```
+
+## Aufgabe   
+
+a) Erstellen Sie ein Streudiagramm für Sprungdistanz und Jahr, berechnen Sie den Korrelationskoeffizienten nach Pearson und interpretieren Sie ihre Resultate.     
+b) Erstellen Sie ein Regressionsmodell. Schreiben Sie die Regressionsgleichung auf und interpretieren Sie die Steigung.   
+c) Welche Siegerdistanz erwarten Sie für das Jahr 2100? Erwarten Sie, dass unser Modell eine zuverlässige Vorhersage der Siegerdistanz erlaubt?   
+
+<br/>
+
+## Lösung
+
+a) Erstellen Sie ein Streudiagramm für Sprungdistanz und Jahr, berechnen Sie den Korrelationskoeffizienten nach Pearson und interpretieren Sie ihre Resultate. 
+
+```{r, echo=TRUE, fig.align='center', fig.dim=c(5, 4)}
+## Datensatz einlesen ----------------------------------------------------------
+long <- readr::read_csv("./data/long_jump.csv")  
+
+## Streudiagramm in R-Base erstellen -------------------------------------------
+plot(long$Year, long$Meters,
+     ylab = "Distanz (m)",
+     xlab = "Jahr",
+     main = "Siegerdistanz olympischer Weitsprung Männer",
+     col = "steelblue")  
+
+## Regressionsgerade eintragen -------------------------------------------------
+abline(lm(long$Meters ~ long$Year, data = long), col = "darkgreen")
+
+## Korrelationskoeffizienten nach Pearson berechnen ----------------------------
+cor(long$Meters, long$Year)
+```
+
+* *Die Daten zeigen eine starke positive lineare Korrelation zwischen Jahr und Siegerdistanz, $r$ = 0.88. Seit 1886 nimmt die Siegerdistanz in der Tendenz im Laufe der Jahre zu.*
+
+b) Erstellen Sie ein Regressionsmodell. Schreiben Sie die Regressionsgleichung auf und interpretieren Sie die Regressionskoeffizienten.   
+
+```{r, echo=TRUE}
+long_lm <- lm(long$Meters ~ long$Year, data = long)
+summary(long_lm)
+```
+
+$$\widehat{Distanz} = -20.45 + 0.0145 \times Jahr$$
+
+* *Mit jedem zusätzlichen Jahr nimmt die Siegerdistanz im Durchschnitt um 0.015 m (1.5 cm) zu, $\beta_1$ = 0.015, p < 0.001. Im Jahre 0 lag die olympische Siegerdistanz bei durchschnittlich -20.45 m, $\beta_0$ = -20.45, p < 0.005 ;).* 
+
+c) Welche Siegerdistanz erwarten Sie für das Jahr 2100? Erwarten Sie, dass unser Modell eine zuverlässige Vorhersage der Siegerdistanz erlaubt?   
+
+```{r}
+## Einsetzen von 2100 für x in die Regressionsgleichung ------------------------
+-20.45 + 0.0145 * 2100
+```
+
+* *Das Modell sagt für 2100 eine durchschnittliche Siegerdistanz im Weitsprung der Männer von 10 m voraus. Die Voraussage extrapoliert über den gemessenen Datenbereich hinaus und ist daher nicht zuverlässig.*   
+
+<br/>
+
+# Klima Basel-Stadt {.tabset}  
+
+Im Datensatz `wetterBS_M.csv` sind die durchschnittlichen `M.temp` und die maximalen `Max.temp` (maximaler Monatsdurchschnitt) Jahrestemperaturen für die Jahre `Year` 1864 bis 2021 abgelegt.    
+
+
+```{r, fig.align='center', fig.dim=c(5, 4)}
+## Daten aufbereiten -----------------------------------------------------------
+# wetter <- read_csv("./data/wetterBS.csv")
+# wetter$Datum <- str_c(wetter$Year, wetter$Month, sep = "-")
+# wetter.M <- wetter %>%
+#   filter(Year < 2022) %>% 
+#   group_by(Year) %>%
+#   summarise(
+#     M.temp = mean(Temperature),
+#     Max.temp = max(Temperature)
+#   )
+# write_csv(wetter.M, "./data/wetterBS_M.csv")
+wetter <- read_csv("./data/wetterBS_M.csv")
+
+ggplot(wetter, aes(x = Year, y = Max.temp)) +
+  geom_point(size = 3, color = "steelblue", alpha = .7) +
+  scale_x_continuous(breaks = seq(from = 1860, to = 2030, by = 10)) +
+  xlab("Jahr") +
+  ylab("Durchschnittstemperatur (°C)") +
+  ggtitle("Temperatur Basel-Stadt, Jahresdurchschnitt (1864-2021)") +
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+## Aufgabe
+
+a) Erstellen Sie ein eigenes Streudiagramm für die Entwicklung der jährlichen Durchschnittstemperaturen in Basel und ein Regressionsmodell. Intepretieren Sie das Resultat.  
+b) Berechnen Sie anhand des Modells die durchschnittliche Jahrestemperatur in Basel für die Jahre 1936 und 2100. Intepretieren Sie ihre Resultate.  
+c) Bonus: Denken Sie, eine lineare Regression ist ein gutes Modell für diese Daten. In welchen Bereichen würden Sie einen linearen Zusammenhang vermuten. Erstellen Sie zwei separate Regressionsmodelle für die Periode (1864 bis 1969) und die Periode (1970 bis 2021). Was stellen Sie fest?    
+
+<br/>
+
+## Lösung   
+
+a) Erstellen Sie ein eigenes Streudiagramm und ein Regressionsmodell. Intepretieren Sie das Resultat.  
+
+```{r, fig.align='center'}
+## Streudiagramm erstellen -----------------------------------------------------
+plot(wetter$Year, wetter$M.temp,
+     xlab = "Jahr",
+     ylab = "Durchschnittstemperatur (°C)",
+     main = "Temperatur Basel-Stadt, Jahresdurchschnitt (1864-2021)")
+
+## Regressionsgerade erstellen -------------------------------------------------
+abline(lm(wetter$M.temp ~ wetter$Year, data = wetter), col = "darkgreen") 
+
+## Regressionsmodell erstellen -------------------------------------------------
+wetter_lm <- lm(wetter$M.temp ~ wetter$Year, data = wetter)
+summary(wetter_lm)
+```
+
+$$\widehat{Temperatur} = -20.397 + 0.0154 \times Jahr$$
+
+* *Zwischen 1864 und 2021 nimmt die durchschnittliche Jahrestemperatur im Mittel um 0.0154 °C pro Jahr zu, $\beta_1$ = 0.0154, p < 0.001. Die Variable `Year` erklärt rund 52% der Variabilität der durchschnittlichen Jahrestemperatur.*  
+
+b) Berechnen Sie anhand des Modells die durchschnittliche Jahrestemperatur für die Jahre 1936 und 710 Intepretieren Sie ihre Resultate.   
+
+```{r}
+## Einsetzen von 1936 in die Regressionsgleichung ------------------------------
+-20.397 + 0.0154 * 1936
+
+## Einsetzen von 710 in die Regressionsgleichung ------------------------------
+-20.397 + 0.0154 * 710
+```
+
+* *Das Modell sagt eine durchschnittliche Jahrestemperatur für von 9.417 °C für das Jahr 1936 und eine durchschnittliche Jahrestemperatur von -9.5°C für das Jahr 710 voraus. Die Voraussage für das Jahr 710 ist eine Extrapolation über den gemessenen Zeitraum hinaus und liefert keine verlässlichen Ergebnisse.*   
+
+c) Bonus: Denken Sie, eine lineare Regression ist ein gutes Modell für diese Daten. In welchen Bereichen würden Sie einen linearen Zusammenhang vermuten. Erstellen Sie zwei separate Regressionsmodelle für die Periode (1864 bis 1969) und die Periode (1970 bis 2021). Was stellen Sie fest?  
+
+```{r, echo=TRUE}
+## r für 1864 bis 1970 ---------------------------------------------------------
+wetter_1864 <- subset(wetter, Year < 1970)
+wetter_1864_lm <- lm(M.temp ~ Year, data = wetter_1864)  
+summary(wetter_1864_lm)
+
+## r für 1970 bis 2021 ---------------------------------------------------------
+wetter_1970 <- subset(wetter, Year >= 1970)
+wetter_1970_lm <- lm(M.temp ~ Year, data = wetter_1970)  
+summary(wetter_1970_lm)
+```
+
+* *In der Periode zwischen 1864 und 1969 nimmt die durchschnittliche Jahrestemperatur in Basel im Mittel um 0.0085 °C pro Jahr zu, $\beta_1$ = 0.0085, $p$ < 0.001. In der Periode nach 1970 nimmt die durchschnittliche Jahrestemperatur im Mittel um 0.0464 °C pro Jahr zu, $\beta_1$ = 0.0464, $p$ < 0.001. Die Streuung der Daten in der Periode vor 1970 ist wesentlich grösser $r$ = 0.388 als nach 1970 $r$ = 0.794.*
+
+```{r, fig.align='center', fig.dim=c(6, 4)}
+wetter <- wetter %>% 
+  mutate(
+    Periode = ifelse(Year < 1970, "vor 1970", "nach 1970")
+  )
+
+ggplot(wetter, aes(x = Year, y = M.temp, color = Periode)) +
+  geom_point(size = 3, alpha = .7) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_x_continuous(breaks = seq(from = 1860, to = 2030, by = 10)) +
+  xlab("Jahr") +
+  ylab("Durchschnittstemperatur (°C)") +
+  ggtitle("Temperatur Basel-Stadt, Jahresdurchschnitt (1864-2021)") +
+  theme_classic() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+<br/>
 
 # Referenzen  
