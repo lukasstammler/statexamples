@@ -1,0 +1,32 @@
+Kategorie,Unterkategorie,2000_m,2005_m,2010_m,2015_m,2019_m,MW_m,2000_f,2005_f,2010_f,2015_f,2019_f,MW_f,MW_total
+Alle,alle,750.2,654,577,547,488.3,603.3,457,408,376,367,341.9,390,993.3
+Infektionskrankheiten,gesamt,8.5,6.3,7,6.9,5.4,6.8,6.2,4.1,4.3,4.4,4.1,4.6,11.399999999999999
+Infektionskrankheiten,Tuberkulose,0.5,0.3,0.2,0.1,0.1,0.2,0.2,0.1,0.1,0.1,NA,0.1,0.30000000000000004
+Infektionskrankheiten,AIDS,2.1,1.2,0.7,0.6,0.3,1,1.1,0.5,0.2,0.1,0.1,0.4,1.4
+Boesartige_Tumoren,gesamt,213.6,192,176,164,142.8,177.7,125.9,114,111,106,99.5,111.3,289
+Boesartige_Tumoren,Magen,8.4,7.1,6,5.8,5,6.5,3.8,3.2,2.6,2.6,2.6,3,9.5
+Boesartige_Tumoren,Dickdarm,16.5,13.9,12.8,10.4,8.9,12.5,9.4,7.8,7.2,6.8,6.5,7.5,20
+Boesartige_Tumoren,Lunge,52,47,41.1,36.3,29.2,41.1,15.9,16.5,18.7,18.3,19.4,17.8,58.900000000000006
+Boesartige_Tumoren,Brust,0.2,0.2,0.2,0.1,0.1,0.2,26.4,23.3,22.8,20.3,18.6,22.3,22.5
+Boesartige_Tumoren,Prostata,30.8,26,25.1,21,18.9,24.4,NA,NA,NA,NA,NA,NA,NA
+Boesartige_Tumoren,Cervix,NA,NA,NA,NA,NA,NA,1.7,1.7,1.1,1.2,1.1,1.4,NA
+Diabetes mellitus,gesamt,15.1,13.1,10.4,10.1,8.6,11.5,12.2,9.8,7.2,6.6,4.8,8.1,19.6
+Demenz,gesamt,18.9,22,27.4,29.1,26.6,24.8,19.4,26.2,31.7,35.3,33.8,29.3,54.1
+Kreislaufsystem,gesamt,264.8,219,181,154,128.1,189.4,167.6,137,116,104,87.4,122.4,311.8
+Kreislaufsystem,Herzkrankheiten_gesamt,204.8,170,141,123,100.8,147.9,123.2,101,87.4,79.3,65.6,91.3,239.2
+Kreislaufsystem,Ischaemische_Herzkrankheiten,129.1,103,80.4,64.4,54.4,86.3,64.8,50,38.4,29.4,24.9,41.5,127.8
+Kreislaufsystem,Lungenembolie,3.4,2.8,1.9,2.1,2.2,2.5,3.8,2.6,2.4,2.2,1.8,2.6,5.1
+Kreislaufsystem,Zerebrovaskulaere_Krankheiten,41.5,34.3,28.3,22.7,19.1,29.2,34.3,27.7,22.4,19.4,16.9,24.1,53.3
+Atmungsorgane,gesamt,57.4,46.9,36,36.7,33,42,28.1,23.9,18.6,22.6,20.8,22.8,64.8
+Atmungsorgane,Grippe,2.7,0.8,NA,1.3,1.7,1.6,2.1,0.9,NA,1.4,1.4,1.5,3.1
+Atmungsorgane,Pneumonie,18.8,14.6,9.2,10.2,8.3,12.2,12.2,9.4,5.9,7,5.1,7.9,20.1
+Atmungsorgane,Chronische Bronchitis,26.2,23.8,19.3,17.8,15.3,20.5,8.3,8.4,8.7,10.1,10.2,9.1,29.6
+Atmungsorgane,Asthma,2,1,0.5,0.5,0.5,0.9,1.5,1,0.8,0.7,0.5,0.9,1.8
+Alkoholische_Leberzirrhose,gesamt,8.1,8.4,7.7,6.5,4.7,7.1,3,3.1,2.7,2.5,2.4,2.7,9.8
+Harnorgane,gesamt,5.5,4.2,7.1,7.9,6.9,6.3,4.5,2.8,4.6,5.4,5.5,4.6,10.899999999999999
+Kongenitale_Missbildungen,gesamt,4.5,4.7,3.3,4.4,3.1,4,4.4,3.7,3.8,3.5,3.3,3.7,7.7
+Perinatale_Todesursachen,gesamt,4,4,3.6,3.5,3.1,3.6,3.2,2.9,4,3.1,2.9,3.2,6.800000000000001
+Unfaelle_Gewalteinwirkungen,gesamt,62.8,51.3,45.6,44.3,38.3,48.5,25,22.6,20.4,19.1,18.3,21.1,69.6
+Unfaelle_Gewalteinwirkungen,Unfaelle insgesamt,34.3,26.9,27.2,25.9,21.3,27.1,13.9,12.3,13.1,12.2,11.7,12.6,39.7
+Unfaelle_Gewalteinwirkungen,Strassenverkehrsunfaelle,11.6,7.3,6.1,4.2,3.2,6.5,3.7,2,1.6,1.2,0.6,1.8,8.3
+Unfaelle_Gewalteinwirkungen,Suizid,25.9,22.1,16.5,16.6,14.6,19.1,9.3,8.7,6.2,5.7,5.3,7,26.1

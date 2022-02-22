@@ -1,0 +1,108 @@
+---
+title: 'Sammlung: Deskriptive Statistik'
+author: "Lukas Stammler"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_height: 4
+    fig_width: 5
+    highlight: pygments
+    theme: yeti
+    code_download: false
+    toc: yes
+    number_sections: yes
+    toc_float: yes
+bibliography: book.bib
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+
+library(tidyverse)
+library(jmv)
+library(knitr)
+library(kableExtra)
+library(openintro)
+library(patchwork)
+```
+
+Übungssammlung zur deskriptiven Statistik
+
+# Todesursachen Schweiz {.tabset}   
+
+Der Datensatz `todesursachen_CH.csv` enthält die Statistik für die Todesursachen in der Schweiz in den Jahren 2000, 2005, 2010, 2015 und 2019 pro 100'000 Einwohner:innen. Die Daten sind nach Geschlecht (`_m, _f`) getrennt angegeben. Die Variablen `MW_m` und `MW_f`geben die Durchschnittswerte für erfasste Periode nach Geschlecht getrennt an und die Variable `MW_total` gibt die gesamten Durchschnittswerte an.
+
+Quelle: [BFS](https://www.bfs.admin.ch/bfs/de/home/statistiken/gesundheit/gesundheitszustand/sterblichkeit-todesursachen/spezifische.assetdetail.19444390.html)
+
+
+## Aufgabe
+
+a) In welche Kategorien fallen die drei häufigsten Todesursachen?    
+b) In welchen Kategorien finden Sie die grössten Unterschiede in der relativen Häufigkeit zwischen Männern und Frauen. Haben Sie eine Erklärung dafür?   
+c) Erstellen Sie eine Grafik zur Häufigkeit der Todesursachen nach Kategorien.
+
+**Hinweis:** Diese Aufgabe ist einfacher in Excel zu lösen. Verwenden Sie für Excel die Datei `todesursachen_CH_kurz.xlsx` 
+
+## Lösung
+
+a) In welche Kategorie fällt die häufigste Todesursache?
+
+```{r}
+todesursachen <- readr::read_csv("./data/todesursachen_CH_kurz.csv")
+
+todesursachen %>% 
+  arrange(desc(MW_total)) %>% 
+  kbl(caption = "Todesursachen CH 2000-2019, Quelle BFS") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+* *Die drei häufigsten Todesursachen sind Erkrankungen des (1) Kreislaufssystems, (2) bösartige Tumoren und (3) Unfälle und Gewalteinwirkungen.*  
+
+b) In welchen drei Kategorien finden Sie die grössten Unterschiede zwischen Männern und Frauen in der relativen  Häufigkeit der Todesursachen.    
+
+```{r}
+tab <- todesursachen %>% 
+  mutate(
+    Perc_m = MW_m/sum(MW_m) * 100,
+    Perc_f = MW_f/sum(MW_f) * 100,
+    Ratio1 = Perc_m/Perc_f,
+    Ratio2 = Perc_f/Perc_m
+  ) %>% 
+  select(
+    Kategorie, MW_m, Perc_m, MW_f, Perc_f, Ratio1, Ratio2
+  ) %>% 
+  arrange(desc(Ratio1))
+
+func <- function(z) if (is.numeric(z)) sum(z) else ''
+sumrow <- as_tibble(lapply(tab, func))
+sumrow[1] <- "Total"
+tabs <- rbind(tab, sumrow) 
+
+tabs %>% 
+  kbl(digits = 2, caption = "Todesursachen CH 2000-2019, Quelle BFS") %>% 
+  kable_styling(full_width = FALSE) %>%
+  row_spec(dim(tabs)[1], bold = T) %>% # format last row
+  column_spec(1, italic = T) # format first column
+```
+
+* Ratio1 = Anteil Männer %/Anteil Frauen %    
+* Ratio2 = Anteil Frauen %/Anteil Männer %   
+
+1. *Frauen sterben 1.85 Mal häufiger an den Folgen von Demenz als Männer.*   
+2. *Männer sterben 1.68 Mal häufiger an den Folgen von alkoholischer Leberzirrhose als Frauen.*   
+3. *Männer sterben 1.47 Mal häufiger an den Folgen von Unfällen, Gewalteinwirkungen oder durch Suizid als Frauen.*   
+
+
+c) Erstellen Sie eine Grafik zur Häufigkeit der Todesursachen nach Kategorien.
+
+```{r, fig.align='center', fig.dim=c(6, 5)}
+todesursachen %>% 
+  ggplot(., aes(y = reorder(Kategorie, MW_total), x = MW_total)) +
+  geom_col(fill = "steelblue") +
+  xlab("Anzahl pro 100'000 Einwohner") +
+  ylab("") +
+  ggtitle("Todesursachen Schweiz 2000-2019", subtitle = "Bundesamt für Statistik")
+```
+

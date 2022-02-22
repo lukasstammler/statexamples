@@ -1,0 +1,441 @@
+---
+title: 'Sammlung: Mittelwertsvergleiche'
+author: "Lukas Stammler"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_height: 4
+    fig_width: 5
+    highlight: pygments
+    theme: yeti
+    code_download: false
+    toc: yes
+    number_sections: yes
+    toc_float: yes
+bibliography: book.bib
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+
+library(tidyverse)
+library(jmv)
+library(knitr)
+library(kableExtra)
+library(openintro)
+library(patchwork)
+```
+
+Übungssammlung zu Mittelwertsvergleichen
+
+# Spitalaufenthaltsdauer {.tabset} 
+
+Im Jahr 1984 wurde in der Zeitschrift Science eine Studie publiziert, die der Frage nachging, ob der Blick aus dem Fenster des Spitalzimmers einen Einfluss auf die postoperative Erholung hat. [@ulrich1984]  
+
+Eingeschlossen in die Studie wurden 46 Patient:innen, die sich zwischen 1972 und 1981 einer Gallenblasenoperation (Cholezystektomie) unterzogen. Die eine Gruppe der Patient:innen erhielt ein Zimmer mit Blick auf Bäume im Park des Spitals, die andere Gruppe erhielt ein Zimmer mit Blick auf eine Backsteinmauer. Die Patient:innen wurden dann so zu Paaren (n = 23) gematched, dass eine Patientin ein Zimmer mit Blick auf einen Baum und die andere Blick auf die Mauer hatten. Kriterien für das Matching waren Geschlecht (15 Frauenpaare, 8 Männerpaare), Alter ($\pm\ 5 Jahre), Raucherstatus, Gewicht (normal, Übergewicht) und Stockwerk des Patient:innenzimmers. Primäre Outcomes waren die Länge der Hospitalisation (Operationstag bis Austritt) und die über die ersten 6 Tage verabreichte Dosis an Schmerzmitteln.  
+
+Die Daten sind im Datensatz `hospitalisation.csv` abgelegt. (Da die Rohdaten nicht vorliegen, handelt es sich um Daten, die aus den Ergebnissen der Studie simuliert wurden.)
+
+|Variable|Erläuterung|
+|:-------|:----------|
+|Gruppe|Patientenzimmer, "tree", "wall"|
+|Paar|matched pair number|
+|Sz.mittel|verabreichte Schmerzmittelmenge|
+|Tage|Hospitalisationsdauer|
+
+
+```{r, eval=FALSE, echo = FALSE}
+# Methodik für analgesics ******************************************************
+# Daten werden nach schwachen, mittelstarken und starken Schmerzmitteln im 
+# Artikel angegeben. Es wurden gewichtete Mittelwerte für die ersten 6 Tage 
+# berechnet: # schwach x 1, mittel x 2, stark x 3
+# ******************************************************************************
+
+set.seed(123)
+## simulate data for analgesics ------------------------------------------------
+sz.tree <- rnorm(23, mean = 2.28, sd = 1.5)
+sz.wall <- rnorm(23, mean = 4.31, sd = 2)
+
+## simulate data for hospitalisation days --------------------------------------
+days.tree <- round(runif(23, min = 5, max = 10), 0)
+days.wall <- round(runif(23, min = 6, max = 11), 0)
+
+## create dataset --------------------------------------------------------------
+hospitalisation <- tibble(
+  Gruppe = c(rep("tree", 23), rep("wall", 23)),
+  Paar = c(1:23, 1:23),
+  Sz.mittel = c(sz.tree, sz.wall),
+  Tage = c(days.tree, days.wall)
+)
+#write_csv(hospitalisation, "./data/hospitalisation.csv")
+```
+
+## Aufgabe
+
+Hat der Blick aus dem Patientenzimmer einen Einfluss auf die Hospitalisationsdauer?   
+
+a) Beschreiben Sie die Daten deskriptiv inkl. einer Grafik.      
+b) Prüfen Sie eine allfällige Differenz mittels Konfidenzintervall und  statistischem Hypothesentest. (Hinweis: in einem matched pairs design sind die Daten gepaart)   
+
+<br/>   
+
+## Lösung  
+
+```{r, echo=FALSE}
+hosp <- readr::read_csv("./data/hospitalisation.csv")
+```
+
+a) Beschreiben Sie die Daten deskriptiv inkl. einer Grafik.     
+
+* für Rohdaten  
+
+```{r, echo=TRUE}
+hosp %>% 
+  group_by(Gruppe) %>% 
+  summarise(
+    n = n(),
+    M = mean(Tage),
+    s = sd(Tage),
+    Median = median(Tage),
+    Min = min(Tage),
+    Max = max(Tage)
+  ) %>% 
+  kbl(digits = 2, caption = "Hospitalisationstage") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+```{r, echo=TRUE, fig.align='center'}
+ggplot(hosp, aes(x = Gruppe, y = Tage)) +
+  geom_boxplot() +
+  geom_jitter(color = "steelblue", alpha =.7, size = 3, 
+              width = .2, height = 0.01) +
+  ggtitle("Hospitalisationsdauer in Tagen", subtitle = "n = 23 pro Gruppe")
+```
+
+
+* für paarweise Differenzen   
+
+```{r}
+hosp.wide <- hosp %>% 
+  select(Gruppe, Tage) %>% 
+  pivot_wider(names_from = Gruppe, values_from = Tage, values_fn = list) %>% 
+  unnest(cols = everything()) %>% 
+  mutate(
+    Diff = tree - wall
+  ) 
+
+hosp.wide %>% 
+  summarise(
+    M = mean(Diff),
+    s = sd(Diff),
+    Median = median(Diff),
+    Min = min(Diff),
+    Max = max(Diff)
+  ) %>% 
+  kbl(digits = 2, 
+      caption = "(tree - wall) Hospitalisationstage, n = 23 Paare") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+```{r, fig.align='center'}
+ggplot(hosp.wide, aes(y = Diff)) +
+  geom_boxplot() +
+  ylab("Tage") +
+  xlab("") +
+  ggtitle("(tree - wall) Hospitalisationsdauer, n = 23 Paare") 
+```
+
+* *Die Hospitalisationsdauer für Patient:innen mit Blick auf Bäume beträgt im Durchschnitt 7.7 (s = 1.52) Tage und für Patient:innen mit Blick auf eine Backsteinmauer 8.7 (s = 1.33) Tage. Im Durchschnitt sind Patient:innen mit Blick auf Bäume 1 (s = 2.07) Tage kürzer im Spital als Patient:innen mit Blick auf eine Backsteinmauer.*   
+
+b) Führen Sie einen statistischen Hypothesentest durch.  
+
+* Hypothesen:     
+   * $H_0: \mu_{diff} = 0$, die Aufenthaltsdauer unterscheidet sich nicht.   
+   * $H_A: \mu_{diff \neq 0}$, es gibt einen Unterschied in der Aufenthaltsdauer. 
+   
+* Voraussetzungen:   
+   * Stichprobenumfang n > 12. JA   
+   * Paarweise Differenzen stammen aus einer normalverteilten Population. JA  
+   
+```{r, echo=TRUE, fig.align='center'}
+ggplot(hosp.wide, aes(sample = Diff)) +
+  stat_qq(size = 3, color = "steelblue", alpha = .6) +
+  stat_qq_line(color = "darkgreen") +
+  ylab("Differenzen (Tage)") +
+  xlab("Theoretische Quantile") +
+  ggtitle("QQ-Plot für Differenzen (tree - wall), n = 23")
+```
+
+* 95%-Konfidenzintervall für Diff berechnen (kann auch direkt im Output von t.test() abgelesen werden)   
+
+```{r}
+n <- length(hosp.wide$Diff)     # Stichprobenumfang
+s <- sd(hosp.wide$Diff)         # Standardabweichung von Diff
+SE <- s/sqrt(n)                 # Standardfehler von Diff
+M <- mean(hosp.wide$Diff)       # Mittelwert von Diff
+t <- qt(.025, n - 1)            # t-Wert für 95% CI und df = n - 1  
+CI95 <- M + c(-1, 1) * t * SE   # 95% CI berechnen
+print(CI95)                     # 95% CI ausgeben
+```
+
+* *Die Spitalaufenthaltsdauer für Patient:innen nach Gallenblasenentfernung mit Blick auf Bäume ist im Durchschnitt um -1 [-0.106, -1.894] Tage kürzer als für Patient:innen mit Blick auf eine Backsteinmauer. Das 95%-Konfidenzintervall enthält den Nullwert nicht und wir haben Evidenz dafür, dass wir die $H_0$ zugunsten der $H_A$ verwerfen können.*      
+
+* t-Test für verbundene Daten (= Einstichproben-t-Test)   
+
+```{r}
+t.test(hosp.wide$Diff, mu = 0, alternative = "two.sided")
+```
+
+* *Die Daten liefern Evidenz für eine signifikant kürzere Spitalaufenthaltsdauer nach Gallenblasenentfernung für Patient:innen in einem Zimmer mit Blick auf Bäume, als für Patientinnen in einem Zimmer mit Blick auf eine Backsteinmauer, -1 [-0.106, -1.894] Tage, t = -2.320, df = 22, p = 0.03.*   
+
+<br/>
+
+# Schmerzmittelverbrauch {.tabset}  
+
+In der Studie zum Einfluss des Patientenzimmers auf die postoperative Erholung, wurde auch der Einfluss auf die Menge an verabreichten Schmerzmitteln in den ersten 6 Tagen nach der Operation, untersucht. 
+
+## Aufgabe  
+
+Hat der Blick aus dem Patientenzimmer einen Einfluss auf die Mengen an verabreichten Schmerzmitteln?   
+
+a) Beschreiben Sie die Daten deskriptiv inkl. einer Grafik.      
+b) Prüfen Sie eine allfällige Differenz mittels Konfidenzintervall und  statistischem Hypothesentest. (Hinweis: in einem matched pairs design sind die Daten gepaart)   
+
+## Lösung   
+
+a) Beschreiben Sie die Daten deskriptiv inkl. einer Grafik. 
+
+* für Rohdaten
+
+```{r}
+hosp %>% 
+  group_by(Gruppe) %>% 
+  summarise(
+    n = n(),
+    M = mean(Sz.mittel),
+    s = sd(Sz.mittel),
+    Median = median(Sz.mittel),
+    Min = min(Sz.mittel),
+    Max = max(Sz.mittel)
+  ) %>% 
+  kbl(digits = 2, caption = "Verabreichte Schmerzmittel post-OP") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+```{r, fig.align='center'}
+ggplot(hosp, aes(y = Sz.mittel, x = Gruppe)) +
+  geom_boxplot() +
+  geom_jitter(color = "steelblue", alpha =.7, size = 3, 
+              width = .1, height = 0.01) +
+  ggtitle("Verabreichte Schmerzmittel (stand. Einheiten)", subtitle = "n = 23 pro Gruppe")
+```
+
+* Hinweis: Das Minimum < 0 ist eigentlich unsinnig und ist eine Folge der Datensimulation. Bitte ignorieren.   
+
+* für paarweise Differenzen   
+
+```{r}
+hosp.wide.sz <- hosp %>% 
+  select(Gruppe, Sz.mittel) %>% 
+  pivot_wider(names_from = Gruppe, values_from = Sz.mittel, values_fn = list) %>% 
+  unnest(cols = everything()) %>% 
+  mutate(
+    Diff = tree - wall
+  ) 
+
+hosp.wide.sz %>% 
+  summarise(
+    M = mean(Diff),
+    s = sd(Diff),
+    Median = median(Diff),
+    Min = min(Diff),
+    Max = max(Diff)
+  ) %>% 
+  kbl(digits = 2, 
+      caption = "(tree - wall) verabreichte Sz.Mittel, n = 23 Paare") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+```{r, fig.align='center'}
+ggplot(hosp.wide.sz, aes(y = Diff)) +
+  geom_boxplot() +
+  ylab("Schmerzmittel (standardisierte Einheiten") +
+  xlab("") +
+  ggtitle("(tree - wall) verabreichte Sz.Mittel, n = 23 Paare") 
+```
+
+* *Die Menge an Schmerzmitteln für Patient:innen mit Blick auf Bäume beträgt im Durchschnitt 2.31 (s = 1.45) standardisierte Einheiten und für Patient:innen mit Blick auf eine Backsteinmauer 4.43 (s = 1.92) standardisierte Einheiten. Im Durchschnitt benötigen Patient:innen mit Blick auf Bäume -2.12 (s = 2.56) standardisierte Einheiten weniger Schmerzmittel als Patient:innen mit Blick auf eine Backsteinmauer.*   
+
+b) Prüfen Sie eine allfällige Differenz mittels Konfidenzintervall und  statistischem Hypothesentest. (Hinweis: in einem matched pairs design sind die Daten gepaart)   
+
+* Hypothesen:
+   *$H_0: \mu_{Diff} = 0$ Es besteht kein Unterschied zwischen den beiden Gruppen.  
+   *$H_A: \mu_{Diff} \neq 0$ Die beiden Gruppen unterscheiden sich.   
+   
+* Voraussetzungen prüfen   
+   * Stichprobenumfang > 12. JA   
+   * Paarweise Differenzen stammen aus einer normalverteilten Population. JA. 
+   
+```{r, fig.align='center'}
+ggplot(hosp.wide.sz, aes(sample = Diff)) +
+  stat_qq(size = 3, color = "steelblue", alpha = .6) +
+  stat_qq_line(color = "darkgreen")
+```
+   
+* 95%-Konfidenzintervall berechnen
+
+```{r}
+n <- length(hosp.wide.sz$Diff)
+s <- sd(hosp.wide.sz$Diff)
+SE <- s/sqrt(n)  
+M <- mean(hosp.wide.sz$Diff)
+t <- qt(.025, df = n - 1)
+CI95 <- M + c(-1, 1) * t * SE
+print(CI95)
+```
+
+* *Die Menge an Schmerzmitteln für Patient:innen nach Gallenblasenentfernung mit Blick auf Bäume ist im Durchschnitt um -2.12 [-3.223, -1.008] standardisierte Einheiten geringer als für Patient:innen mit Blick auf eine Backsteinmauer. Das 95%-Konfidenzintervall enthält den Nullwert nicht und wir haben Evidenz dafür, dass wir die $H_0$ zugunsten der $H_A$ verwerfen können.*      
+
+* t-Test für verbundene Daten (= Einstichproben-t-Test)   
+
+```{r}
+t.test(hosp.wide.sz$Diff, mu = 0, alternative = "two.sided")
+```
+
+* *Die Daten liefern Evidenz für eine signifikant geringere benötigte Schmerzmittelmenge nach Gallenblasenentfernung bei Patient:innen in einem Zimmer mit Blick auf Bäume, als bei Patientinnen in einem Zimmer mit Blick auf eine Backsteinmauer, -2.12 [-3.223, -1.008] standardisierte Einheiten, t = -3.917, df = 22, p < 0.001.*  
+
+<br/>
+
+# Penisgrösse {.tabset}   
+
+Quelle: https://github.com/tadaadata/loldata: loldata package   
+
+Die Länge des Penis ist für das Selbstwertgefühl vieler Männer von grosser Bedeutung. Der Datensatz `penis` enthält biometrische Penisdaten aus mehreren Regionen der Welt und umfasst folgende Variablen
+
+|Variable|Erläuterung|
+|:-------|:----------|
+|country|Land|
+|region|Kontinentalregion|
+|length_flaccid|Länge nicht erregt (cm)|
+|length_erect|Länge bei Erektion (cm)|
+|circumf_flaccid|Umfang nicht erregt (cm)
+|circumf_erect|Umfang bei Erektion (cm)|
+|volume_erect|Volumen bei Erektion ($cm^3$)|
+|volume_flaccid|Volumen nicht erregt ($cm^3$)|
+|method|"Measured", "Self reported"|
+|n|Stichprobenumfang|  
+
+## Aufgabe
+
+Unterscheiden sich die Angaben, wenn die Länge des erigierten Penis selber oder durch eine Fremdperson gemessen wird? Verwenden Sie die Variablen `length_erect` und `method` und beantworten Sie diese Frage anhand einer statistischen Analyse.  Signifikanzniveau $\alpha = 0.05$
+
+<br/>
+
+## Lösung
+
+1. Hypothesen formulieren   
+   * $H_0: \mu_{self~reported} = \mu_{measured}$
+   * $H_0: \mu_{self~reported} \neq \mu_{measured}$   
+   
+2. Punktschätzer berechnen   
+
+```{r}
+## import data
+penis <- read_csv("./data/penis.csv")
+
+## method dplyr ----------------------------------------------------------------
+penis %>% 
+  select(
+    length_erect, method
+  ) %>% 
+  group_by(method) %>% 
+  summarise(
+    M = mean(length_erect),
+    s = sd(length_erect),
+    Median = median(length_erect),
+    Min = min(length_erect),
+    Max = max(length_erect),
+    n = n()
+  ) %>% 
+  kbl(digits = 2, caption = "Penislänge erigiert, n = 146") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+3. Voraussetzungen prüfen   
+
+* Beobachtungen sind unabhängig: kann nicht überprüft werden, ist jedoch bei den geringen Stichprobenumfängen pro Land anzunehmen. JA  
+* Stichprobengrösse > 30 : JA  
+* Daten stammen aus normalverteilten Populationen. JA
+
+```{r, fig.align='center', fig.dim=c(5,4)}
+## method ggplot ---------------------------------------------------------------
+ggplot(penis, aes(sample = length_erect)) +
+  stat_qq(aes(color = method)) +
+  stat_qq_line(aes(color = method)) +
+  ggtitle("QQ-Plot für Penislänge erigiert") +
+  theme_classic()
+```
+
+4. 95%-Konfidenzintervalle berechnen  
+
+```{r, fig.align='center'}
+## calculate SE ----------------------------------------------------------------
+penis %>% 
+  select(
+    length_erect, method
+  ) %>% 
+  group_by(
+    method) %>% 
+  summarise(
+    M = mean(length_erect),
+    s = sd(length_erect),  
+    n = n(),
+    SE = s/sqrt(n),
+    CI.lo = mean(length_erect) - 1.96 * SE,
+    CI.up = mean(length_erect) + 1.96 * SE
+  ) %>% 
+  kbl(digits = 2) %>% 
+  kable_styling(full_width = FALSE)
+
+## plot 95% CI -----------------------------------------------------------------
+ggplot(penis, aes(x = method, y = length_erect)) +
+  stat_summary(
+    fun.data = mean_cl_normal, 
+    geom = "errorbar",
+    width = .2
+  ) +
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    size = 3,
+    col = "red"
+  ) +
+  xlab("Messmethode") +
+  ylab("Länge (cm)") +
+  ggtitle("Penislänge erigiert nach Messmethode") +
+  theme_classic()
+```
+
+* *Die durchschnittliche Länge des erigierten Penis beträgt bei Selbstmessung ist 14.74 [14.38, 15.10] cm, bei Fremdmessung 13.46 [13.09, 13.83] cm. Die beiden 95% Konfidenzintervalle überschneiden sich nicht*   
+
+5. Welch-Test
+
+```{r}
+t.test(length_erect ~ method, 
+       data = penis, 
+       method = "two.sided",
+       paired = FALSE)
+
+
+## calculate mean difference ---------------------------------------------------
+13.46117-14.73846
+```
+
+* *Fremdgemessene Werte für die Penislänge sind um durchschnittlich -1.27 [-1.80, -0.75] cm kürzer als selbst gemessene Werte. Es besteht ein signifikanter Unterschied zwischen den selbst- und fremdgemessenen Werten, $t$ = -4.817, $df$ = 134.28, p < 0.0001. (Kommentar des Autors: Wer hätte das gedacht :D )*
+
+<br/>
+
+# Referenzen
+

@@ -1,5 +1,5 @@
 ---
-title: "Korrelation und Regression"
+title: "Sammlung: Korrelation und Regression"
 author: "Lukas Stammler"
 date: "`r Sys.Date()`"
 output:
