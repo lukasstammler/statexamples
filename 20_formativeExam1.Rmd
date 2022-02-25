@@ -1,0 +1,690 @@
+---
+title: "PHY Formative Prüfung"
+author: "Lukas Stammler"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    fig_height: 4
+    fig_width: 5
+    highlight: pygments
+    theme: yeti
+    code_download: false
+    toc: yes
+    number_sections: yes
+    toc_float: yes
+bibliography: book.bib
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(openintro)
+library(patchwork)
+```
+
+
+# Vorbemerkung
+
+Diese formative Prüfung dient der Selbstkontrolle und der Prüfungsvorbereitung. Sie deckt die Statistik-Themen ab, die im Unterricht BGP2483 Statstik am Studiengang BSc Physiotherapie BFH unterrichtet werden.  
+
+## Materialien 
+
+* Für einige Berechnungen benötigen Sie eine `R`-Umgebung wie `RStudio`, `jamovi` mit aktiviertem `Rj-Editor` oder `Base-R`.
+
+<br/>
+<br/>
+
+# Haifischattacken 1 {.tabset}
+
+## Aufgabe
+
+Die Tabelle gibt eine Übersicht über die Haifischattacken weltweit zwischen 2012 und 2021. Quelle: [International Shark Attack File](https://www.floridamuseum.ufl.edu/shark-attacks/trends/location/world/)
+
+```{r}
+shark <- tibble(
+  Jahr = seq(from = 2012, to = 2021, by = 1),
+  letal = c(7, 10, 3, 6, 4, 5, 4, 2, 10, 9),
+  nicht.letal = c(76, 67, 70, 92, 77, 84, 64, 62, 47, 62)
+) %>% 
+  mutate(
+    Total = letal + nicht.letal,
+    Prozent.letal = (letal/Total) * 100
+  )
+
+func <- function(z) if (is.numeric(z)) sum(z) else ''
+sumrow <- as_tibble(lapply(shark, func))
+sumrow[1] <- "Total"
+sumrow[5] <- (sumrow[2]/sumrow[4]) * 100
+shark.tab <- rbind(shark, sumrow) 
+
+shark.tab %>% 
+  kbl(digits = 2, caption = "Haifischattacken weltweit 2012-2021") %>% 
+  kable_styling(full_width = FALSE) %>%
+  row_spec(dim(shark.tab)[1], bold = T) %>% # format last row
+  column_spec(1, italic = T) # format first column
+```
+
+Welche Aussagen sind richtig?   
+
+a) Die Variable `Jahr` ist qualitativ-nominal.  
+b) Die Variable `letal` ist quantitativ-diskret.   
+c) Die Werte in den Spalten `letal`, `nicht.letal` Total sind absolute Häufigkeiten.   
+d) Die Werte in der Spalte `Prozent.letal` sind relative Häufigkeiten.    
+
+## Lösung  
+
+a) Die Variable `Jahr` ist qualitativ-nominal. FALSCH. Richtig wäre qualitativ-ordinal, da eine natürliche Ordnung vorliegt.    
+b) Die Variable `letal` ist quantitativ-diskret. FALSCH. Eine Haifischattacke ist tödlich oder nicht tödlich. Es handelt sich um eine qualitativ-nominale Variable.     
+c) Die Werte in den Spalten `letal`, `nicht.letal` Total sind absolute Häufigkeiten. RICHTIG.  
+d) Die Werte in der Spalte `Prozent.letal` sind relative Häufigkeiten. RICHTIG    
+
+<br/>
+
+# Haifischattacken 2 {.tabset}    
+
+## Aufgabe
+
+Die Tabelle gibt eine Übersicht über die Häufigkeit von Haifischattacken in verschiedenen Regionen (2004 - 2013). Quelle: [International Shark Attack File](https://www.floridamuseum.ufl.edu/shark-attacks/trends/location/world/)     
+
+```{r}
+attacks <- tibble(
+  Region = c("Florida", "Hawaii", "South.Carolina", "California", "North.Carolina", "Australia", "South.Africa", "La.Réunion", "Brasilien", "Bahamas", "Andere"),
+  Haeufigkeit = c(203, 51, 34, 33, 23, 125, 43, 17, 16, 6, 138)
+) %>% 
+  mutate(
+    Anteil = round(Haeufigkeit/sum(Haeufigkeit), 3),
+    Prozent = round(Anteil * 100, 1)
+  )
+
+func <- function(z) if (is.numeric(z)) round(sum(z), 0) else ''
+sumrow <- as_tibble(lapply(attacks, func))
+sumrow[1] <- "Total"
+attacks.tab <- rbind(attacks, sumrow) 
+
+attacks.tab %>% 
+  arrange(Prozent) %>% 
+  kbl(caption = "Häufigkeit von Haifischattacken in verschiedenen Regionen (2004-2013)") %>% 
+  kable_styling(full_width = FALSE) %>%
+  row_spec(dim(attacks.tab)[1], bold = T) %>% # format last row
+  column_spec(1, italic = T) # format first column
+```
+
+Welche Aussagen sind richtig?   
+
+a) Die Variable, die in der Tabelle zusammenfassend dargestellt wird, ist die `Region von Haifischattacken`.   
+b) Diese Variable ist quantitative-diskret.  
+c) 55% der Haifischattacken erfolgen in Florida, Australien und Hawaii.   
+
+## Lösung 
+
+Welche Aussagen sind richtig?   
+
+a) Die Variable, die in der Tabelle zusammenfassend dargestellt wird, ist die `Region von Haifischattacken`. JA     
+b) Diese Variable ist quantitativ-diskret. NEIN. Diese Variable ist qualitativ-nominal. Verwechseln Sie nicht die Häufigkeit des Auftretens mit Werten für die Variable. Die Zahlen geben bloss wider, wie oft ein Haifischangriff in den verschiedenen Regionen beobachtet wurde.    
+c) 55% der Haifischattacken erfolgen in Florida, Australien und Hawaii. JA.  
+
+<br/>
+
+# Haifischattacken 3 {.tabset}
+
+## Aufgabe  
+
+Welche grafische Darstellung würden Sie für die Verteilung der Haifischattacken in den verschiedenen Regionen wählen?  
+
+Welche Antwort ist richtig?  
+
+a) Boxplot  
+b) Streudiagramm   
+c) Histogramm
+d) Balkendiagramm   
+
+
+## Lösung   
+
+RICHTIG ist Antwort d) Balkendiagramm.
+
+```{r, fig.align='center', fig.dim=c(7, 5)}
+ggplot(attacks, aes(x = reorder(Region, Haeufigkeit), y = Haeufigkeit)) +
+  geom_col(fill = "steelblue") +
+  theme(axis.text.x = element_text(angle=45)) +
+  xlab("Region") +
+  ggtitle("Häufigkeit von Haifischattacken in verschiedenen Regionen (2004-2013)")
+```
+
+<br/>
+
+# Fernsehzeit 1 {.tabset}
+
+## Aufgabe  
+
+2012 wurde in einer Umfrage die Frage gestellt: "Wieviele Stunden schauen Sie, an einem durchschnittlichen Tag, Sendungen am Fernsehen?". Die Ergebnisse sind in der Grafik dargestellt.     
+
+```{r fig.align='center'}
+tv <- read_csv("./data/TVhours.csv")
+
+ggplot(tv, aes(x = tvhours)) +
+  geom_bar(fill = "salmon") +
+  scale_x_continuous(breaks = seq(0, 24, 1)) +
+  xlab("Stunden") +
+  ylab("Anzahl") +
+  ggtitle("Fernsehkonsum in Anzahl Stunden pro Tag (n = 1298)")
+```
+
+Beantworten Sie die Fragen?   
+
+a) Wie nennt man diese Art von Grafik?   
+b) Welches ist das häufigste Ergebnis?    
+c) Wie gross etwa ist der prozentuale Anteil der Befragten, die zwei oder weniger Stunden vor dem Fernseher verbringen?  
+d) Wie bezeichnet man die Verteilung der Daten in dieser Grafik?  
+e) Erwarten Sie bei dieser Verteilung einen Unterschied zwischen Mittelwert und Median. Wenn ja, welche Kennzahl ist grösser?  
+f) Welche Kennzahl der zentralen Tendenz würden Sie hier als "typischen" Wert angeben?   
+
+## Lösung  
+
+a) Wie nennt man diese Art von Grafik? *Histogramm*     
+b) Welches ist das häufigste Ergebnis? *2 Stunden TV/Tag*     
+c) Wie gross etwa ist der prozentuale Anteil der Befragten, die zwei oder weniger Stunden vor dem Fernseher verbringen?  *ca. 52%*
+
+```{r, echo=TRUE}
+(90 + 255 + 330)/1298
+```
+
+d) Wie bezeichnet man die Verteilung der Daten in dieser Grafik? *rechtsschief*   
+e) Erwarten Sie bei dieser Verteilung einen Unterschied zwischen Mittelwert und Median. Wenn ja, welche Kennzahl ist grösser?  *JA. Der Mittelwert ist grösser als der Median*  
+
+```{r}
+tv %>% 
+  summarise(
+    M.tv = mean(tvhours),
+    Median.tv = median(tvhours)
+  ) %>% 
+  kbl(digits = 2) %>% 
+  kable_styling(full_width = FALSE)
+```
+
+
+f) Welche Kennzahl der zentralen Tendenz würden Sie hier als "typischen" Wert angeben? *den Median*   
+
+<br/>
+
+# Songs 1 {.tabset}
+
+## Aufgabe   
+
+In einem Mobiltelefon sind 3000 Songs gespeichert. Im Datensatz `songs.csv` ist die Dauer für jeden Song in Minuten angegeben. Laden Sie den Datensatz in ihr Statistikprogramm (`jamovi`, `R`) und beantworten Sie folgende Fragen:   
+
+a) Wie lange dauert ein Song im Durchschnitt?   
+b) Wie lange dauert der i) kürzeste Song, ii) längste Song?   
+c) Erstellen Sie eine Grafik, für die Verteilung der Songdauer aller Songs auf dem Mobiltelefon.   
+d) Beurteilen Sie die Form der Verteilung der Songdauer.  
+e) In welchem Bereich liegt die Dauer der zentralen i) 68%, ii) 95% der Songs?   
+
+```{r}
+songs <- read_csv("./data/songs.csv")
+```
+
+## Lösung   
+
+a) Wie lange dauert ein Song im Durchschnitt?   
+
+```{r}
+songs %>% 
+  summarise(
+    n = n(), 
+    M = mean(song_length),
+    Median = median(song_length),
+    s = sd(song_length),
+    Min = min(song_length),
+    Max = max(song_length)
+  ) %>% 
+  kbl(digits = 2, caption = "Zusammenfassung der Daten zu Songdauer in Minuten (n = 3000)") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+b) Wie lange dauert der i) kürzeste Song, ii) längste Song? *siehe a)*     
+c) Erstellen Sie eine Grafik, für die Verteilung der Songdauer aller Songs auf dem Mobiltelefon. 
+
+```{r}
+ggplot(songs, aes(x = song_length)) +
+  geom_histogram(fill = "steelblue", color = "white", bins = 10) +
+  xlab("Dauer in Minuten") +
+  ylab("Anzahl") +
+  ggtitle("Songdauer in Minuten (n = 3000)")
+```
+
+```{r}
+ggplot(songs, aes(y = song_length)) +
+  geom_boxplot() +
+  ylab("Dauer in Minuten") +
+  ggtitle("Songdauer in Minuten (n = 3000)")
+```
+
+d) Beurteilen Sie die Form der Verteilung der Songdauer. *Die Songdauer ist normalverteilt (emit wenigen Ausreissern nach rechts = längere Dauer).*  
+
+e) In welchem Bereich liegt die Dauer der zentralen i) 68%, ii) 95% der Songs?  
+
+```{r}
+zentr68 <- round(mean(songs$song_length) + c(-1, 1) * sd(songs$song_length), 2)
+print(paste("Zentrale 68%: untere Grenze", zentr68[1], ", obere Grenze", zentr68[2]))
+zentr95 <- round(mean(songs$song_length) + c(-1, 1) * 2 * sd(songs$song_length), 2)
+print(paste("Zentrale 95%: untere Grenze", zentr95[1], ", obere Grenze", zentr95[2]))
+
+m = mean(songs$song_length) 
+s = sd(songs$song_length)
+normTail(m = m, s = s, M = c(m-s, m+s), col = "lightblue", main = "Zentraler 68%-Normbereich für Songdauer (n = 3000)")
+normTail(m = m, s = s, M = c(m-2*s, m+2*s), col = "lightblue", main = "Zentraler 95%-Normbereich für Songdauer (n = 3000)")
+```
+
+<br/>
+
+# Songs 2 {.tabset}
+
+## Aufgabe  
+
+Wir bleiben noch beim Datensatz zur Songdauer. Die Daten auf dem Mobiltelefon entsprechen einer Stichprobe. Beantworten Sie folgende Fragen:
+
+a) Beurteilen Sie auf Grund Ihrer Stichprobe: Wie lange ist die durchschnittliche Dauer von Songs, die auf Mobiltelefone geladen werden können.  
+b) Reflektieren Sie die Aufgabe a) kritisch. Ist es korrekt, von den vorliegenden Stichprobendaten auf die Dauer von Songs, die auf Mobiltelefone geladen werden können, zu schliessen? Begründen Sie Ihr Urteil.   
+
+## Lösung
+
+a) Auf Grund Ihrer Stichprobe, wie lange ist die durchschnittliche Dauer von Songs, die auf Mobiltelefone geladen werden können.  
+
+```{r}
+ci <- m + c(-1, 1) * 1.96 * s/sqrt(length(songs$song_length))
+ci <- round(ci, 2)
+```
+
+* *Die durchschnittliche Länge der Songs, die geladen werden können, ist `r round(m, 2)` [`r ci[1]`, `r ci[2]`] Minuten (95%-CI)* 
+
+b) Kritisieren Sie die Aufgabe a). Ist es korrekt, von den vorliegenden Stichprobendaten auf die Dauer von Songs, die auf Mobiltelefone geladen werden können zu schliessen? Begründen Sie Ihr Urteil.  
+
+* *Voraussetzung für die Gültigkeit eines 95% Konfidenzintervalls ist, dass die Daten zufällig erhoben wurden und unabhängig sind. Das ist hier nicht der Fall. Der, die Besitzer:in hat die Songs nach ihren Vorlieben gesammelt. Wenn ihr eine bestimmte Künstlerin gefällt, wird diese Künstlerin im Vergleich zur Gesamtpopulation der Künstler:innen übervertreten sein. Das Verfahren eignet sich nicht, um die durchschnittliche Länge von Songs zu ermitteln.*    
+
+<br/>
+
+# Peter im Service {.tabset}
+
+Peter arbeitet seit mehreren Jahren in der Sommersaison in seinen Semesterferien im Service eines Restaurants in einem Touristengebiet. Je nach Schicht (Frühstück. Mittag, Abend) variiert sein Lohn inkl. Trinkgeld. Wenn er am Wochenende arbeitet, erhält er zusätzlich eine Wochendendzulage. Die Erfahrung aus den vergangenen Jahren zeigt, dass das Gehalt für eine Schicht einer Wahrscheinlichkeitsverteilung mit dem Mittelwert $\mu = 240$ SFr. und der Standardabweichung $\sigma = 80$ SFr. folgt.  
+
+Am Ende einer Saison wählt Peter zufällig 32 Belege seiner Schichtabrechnungen, um zu berechnen, wie hoch sein durchschnittliches Gehalt pro Schicht war.   
+
+## Aufgabe
+
+a) Bei welchem Wert in SFr. erwarten Sie das durchschnittliche Einkommen von Peter pro Schicht.   
+b) Wie gross erwarten Sie, dass das durchschnittlichen Einkommen pro Schicht von Saison zu Saison variiert? Tipp: Finden Sie die Standardabweichung der  Stichprobenverteilung des Stichprobenmittelwerts.   
+c) Innerhalb von welchem Bereich fallen etwa 95% der durchschnittlichen Einkommen pro Schicht?   
+d) Wie gross ist die Wahrscheinlichkeit, dass in einer Saison das durchschnittliche Einkommen pro Schicht unter 220 SFr liegt?   
+e) Wie gross ist die Wahrscheinlichkeit, dass in einer Saison das durchschnittliche Einkommen pro Schicht über 275 SFr liegt?    
+
+
+<br/>
+
+## Lösung
+
+a) Bei welchem Wert in SFr. erwarten Sie das durchschnittliche Einkommen von Peter pro Schicht. 
+
+* *um 240 SFr*   
+* *Erläuterung: Das Durchschnittseinkommen pro Schicht, das aus den 32 Belegen berechnet wird ist ein Stichprobenmittelwert $\bar{x}$ mit $n$ = 32. Wir erwarten, dass dieser Stichprobenmittelwert in der Nähe des Populationsmittelwerts $\mu$ liegt.*  
+
+b) Wie gross erwarten Sie, dass das durchschnittlichen Einkommen pro Schicht von Saison zu Saison variiert? Tipp: Finden Sie die Standardabweichung der  Stichprobenverteilung des Stichprobenmittelwerts.   
+
+* *$SE$ = 14.14*  
+* *Erläuterung: Die Stichprobenverteilung der Stichprobenmittelwerte hat einen Mittelwert von 240 SFr und eine Standardabweichung $SE = \sigma/\sqrt{n}$. Von einer Saison zur nächsten variiert das durchschnittliche Gehalt pro Schicht um 240 SFr mit einer Standardabweichung von 14.14 SFr.*  
+
+c) Innerhalb von welchem Bereich fallen etwa 95% der durchschnittlichen Einkommen pro Schicht?   
+
+* *212.3 - 267.7 SFr*   
+* *Erläuterung: Mit einem Stichprobenumfang >30 erwarten wir, dass die Stichprobenverteilung annähern normal ist. Das 95%-Konfidenzintervall umfasst den Mittelwert $\pm$ 1.96 x SE (2 wäre auch ok).*   
+
+d) Wie gross ist die Wahrscheinlichkeit, dass in einer Saison das durchschnittliche Einkommen pro Schicht unter 220 SFr liegt?    
+
+* *7.9%*  
+* *Erläuterung: $z = (220 - 240)/14.14 = -1.414$, $p$ = 0.0786.*
+
+```{r, echo=TRUE}
+z <- (220-240) / 14.14   # z-Wert für 220 berechnen
+print(z)                 # z-Wert ausgeben
+pnorm(z)                 # p-Wert für z berechnen und ausgeben
+```
+
+```{r, fig.align='center', fig.dim=c(6, 4)}
+normTail(m = 240, s = 14.14, L = 240-1.4144 * 14.14, col = "lightblue", xLab = "symbol")
+```
+
+e) Wie gross ist die Wahrscheinlichkeit, dass in einer Saison das durchschnittliche Einkommen pro Schicht über 275 SFr liegt?   
+
+* *0.7%*   
+* *Erläuterung: $z = (275 - 240)/14.14 = 2.475$, $p$ = 0.006657.*
+
+```{r, echo=TRUE}
+z <- (275 - 240) / 14.14
+print(z)  
+1 - pnorm(z)             # alternativ: pnorm(z, lower.tail = FALSE)
+```
+
+```{r, fig.align='center', fig.dim=c(6, 4)}
+normTail(m = 240, s = 14.14, U = 240 + 2.4752 * 14.14, col = "lightblue", xLab = "symbol")
+```
+
+<br/>   
+
+# Fernsehzeit 2 {.tabset}
+
+2012 wurde in einer Umfrage die Frage gestellt: "Wieviele Stunden schauen Sie, an einem durchschnittlichen Tag, Sendungen am Fernsehen?". Die Ergebnisse sind in der Tabelle dargestellt.     
+
+```{r}
+tv <- read_csv("./data/TVhours.csv")
+
+tv %>% summarise(
+  n = n(),
+  M = mean(tvhours),
+  s = sd(tvhours),
+  SE = s/sqrt(n),
+  CI95.lo = M - 1.96 * SE,
+  CI95.up = M + 1.96 * SE
+) %>% 
+  kbl(digits = 4, caption = "Zusammenfassung Fernsehzeit (in Stunden)") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+## Aufgabe
+
+Welche Aussagen sind richtig?  
+
+a) Der Stichprobenumfang beträgt 1298 Personen.   
+b) Die durchschnittliche Dauer des Fernsehkonsums in der Population beträgt 3.1 Stunden.   
+c) Das 95%-Konfidenzintervall für den Stichprobenmittelwert $\bar{x}$ beträgt (2.93, 3.24) Stunden.   
+d) $SE$ wird nach der Formel $SE = s/\sqrt{n}$ berechnet.   
+e) Für eine Halbierung von $SE$ müsste der Stichprobenumfang auf 5192 erhöht werden.  
+
+<br/>
+
+## Lösung
+
+a) Der Stichprobenumfang beträgt 1298 Personen. *RICHTIG*      
+b) Die durchschnittliche Dauer des Fernsehkonsums in der Population beträgt 3.1 Stunden. *FALSCH. Der Mittelwert bezieht sich auf die Stichprobe und nicht auf die Population*      
+c) Das 95%-Konfidenzintervall für den Stichprobenmittelwert $\bar{x}$ beträgt (2.93, 3.24) Stunden. *FALSCH. Ein Konfidenzintervall bezieht sich immer auf den Populationsparameter.*      
+d) $SE$ wird nach der Formel $SE = s/\sqrt{n}$ berechnet. *RICHTIG*   
+e) Für eine Halbierung von $SE$ müsste der Stichprobenumfang auf 5192 erhöht werden. *RICHTIG*  
+
+<br/>  
+
+# HIIT
+
+Ist HIIT (Hoch-intensitäts Interval Training) effektiver für die Senkung von arterieller Hypertonie (Bluthochdruck) als Ausdauertraining. Anhand einer Studie mit 120 Proband:innen soll diese Frage beantwortet werden. Die Proband:innen werden randomisiert einer Gruppe (n = 60), die über 12 Wochen ein HIIT-Training absolviert und einer Gruppe (n = 60), die über den gleichen Zeitraum ein Ausdauertraining auf dem Fahradergometer absolviert, zugeordnet. Zu Beginn und am Ende der Trainingsperiode wird der arterielle Blutdruck gemessen. Eine Senkung des arteriellen Blutdrucks wird als positiver Effekt gewertet.      
+
+## Aufgabe
+
+Welche Aussagen sind richtig?  
+
+a) Die wissenschaftliche Nullhypothese für den Effekt auf den Blutdruck lautet $H_0: \bar{x}_{hiit} = \bar{x}_{ausdauer}$.   
+b) Die wissenschaftliche Alternativhypothese für den Effekt auf den Blutdruck lautet $H_A: \mu_{hiit} > \mu_{ausdauer}$.   
+c) Die wissenschaftliche Alternativhypothese ist einseitig formuliert.  
+d) Es muss ein Hypothesentest für verbundene (abhängige) Daten durchgeführt werden.  
+e) Alleine schon wegen des kleinen Stichprobenumfangs muss ein nicht-parametrisches Verfahren für den Hypothesentest zum Einsatz kommen.  
+
+</br>
+
+## Lösung  
+
+a) Die wissenschaftliche Nullhypothese für den Effekt auf den Blutdruck lautet $H_0: \bar{x}_{hiit} = \bar{x}_{ausdauer}$. *FALSCH. Die Hypothesen beziehen sich immer auf den Parameter und nicht auf die Stichprobenkennzahl.*     
+b) Die wissenschaftliche Alternativhypothese für den Effekt auf den Blutdruck lautet $H_A: \mu_{hiit} > \mu_{ausdauer}$. *RICHTIG*      
+c) Die wissenschaftliche Alternativhypothese ist einseitig formuliert. *RICHTIG*    
+d) Es muss ein Hypothesentest für verbundene (abhängige) Daten durchgeführt werden. *FALSCH. Dies ist ein typischer Fall für einen Vergleich von zwei unabhängigen Gruppen*      
+e) Alleine schon wegen des kleinen Stichprobenumfangs muss ein nicht-parametrisches Verfahren für den Hypothesentest zum Einsatz kommen. *FALSCH. Der Stichprobenumfang pro Gruppe ist grösser als 30, was ein parametrisches Verfahren nicht ausschliesst. In diesem Fall ist es wichtiger, dass die Stichprobendaten annähernd normalverteilt sind.*  
+
+<br/>
+
+# Studie: Training und Blutdruck {.tabset}  
+
+Lesen Sie das Abstract der Studie: Costa, I., Schwade, D., Macêdo, G., Browne, R., Farias-Junior, L. F., Freire, Y. A., Sócrates, J., Boreskie, K. F., Duhamel, T. A., & Caldas Costa, E. (2019). Acute antihypertensive effect of self-selected exercise intensity in older women with hypertension: a crossover trial. *Clinical interventions in aging*, 14, 1407–1418. https://doi.org/10.2147/CIA.S207254  
+
+Purpose: Acute reduction in blood pressure (BP) following an exercise session is evidenced in controlled settings with formal supervision in hypertensive older populations. This study investigated the effect of a self-selected exercise (SSE)-intensity session on ambulatory BP in hypertensive older women in a "real-world" setting.   
+
+Methods: Twenty inactive older women with hypertension (64.9±4.5 years) were included in this randomized, controlled, crossover trial. After baseline assessments, participants performed 30 minutes of an SSE-intensity session on an outdoor track and a control session, separated by 7-10 days. Heart rate (HR), rating of perceived exertion (RPE), and affective response were assessed. Ambulatory BP was monitored for 20 hours following both sessions. Paired t-tests and generalized estimation were used for data analysis.   
+
+Results: Participants exercised at 5.1±1.1 km/h, spent ~90% of the exercise time at moderate-vigorous intensity (≥40% of heart rate reserve). SSE-intensity session was reported as light (RPE 11.0±1.5) and pleasant (affect 3.4±1.2). SSE-intensity session elicited reductions in systolic BP in the first 6 hours postexercise (6.0 mmHg, CI 2.7-9.3 mmHg; P<0.001). Average systolic BP in the 20-hour (-3.4 mmHg, CI -5.9 to -0.9 mmHg; P=0.010) and awake (-4.0 mmHg, CI -6.4 to -1.6 mmHg; P=0.003) periods were lower following SSE-intensity session compared to control session. No differences were observed in average systolic BP during asleep period and diastolic BP during the 20-hour awake and asleep periods between the SSE-intensity session and control session (P>0.05).   
+
+Conclusion: An SSE-intensity session elicited a reduction in ambulatory systolic BP in inactive older women with hypertension during awake and 20-hour periods. Also, the SSE-intensity session was reported as light and pleasant.   
+
+Keywords: adherence; affect; blood pressure; elderly; physical activity.  
+
+## Aufgabe  
+
+Welche Aussagen sind richtig?   
+
+a) Der Stichprobenumfang in dieser Studie beträgt $n$ = 20.   
+b) In dieser Studie werden innerhalb der gleichen Probandinnen Messungen einer Trainingssequenz (SSE-intensity session) mit Messungen einer Kontrollsequenz ohne Training verglichen.   
+c) Die Wahl des t-Test für verbundene (gepaarte) Daten ist für dieses Studiendesign korrekt.  
+d) 95% der Frauen waren ca. zwischen 55.9 und  73.9 Jahre alt.   
+e) Ein 30-minütiges Training mit selbst gewählter Intensität, reduziert bei älteren Frauen mit arterieller Hypertonie den systolischen Blutdruck im Durchschnitt signifikant um 2.7 bis 9.3 mmHg.  
+
+<br/>
+
+## Lösung
+
+a) Der Stichprobenumfang in dieser Studie beträgt $n$ = 20. *RICHTIG*      
+b) In dieser Studie werden innerhalb der gleichen Probandinnen Messungen einer Trainingssequenz (SSE-intensity session) mit Messungen einer Kontrollsequenz ohne Training verglichen. *RICHTIG. Bei einem Crossover Design sind die Probandinnen ihre eigene Kontrollgruppe.*    
+
+c) Die Wahl des t-Test für verbundene (gepaarte) Daten ist für dieses Studiendesign korrekt. *RICHTIG. Im Prinzip richtig, da $n$ > 12. Nicht beurteilt werden kann auf Grund der Angaben, ob die paarweisen Differenzen zwischen Trainings- und Kontrollmessung normalverteilt waren.*   
+
+d) 95% der Frauen waren ca. zwischen 55.9 und  73.9 Jahre alt. *RICHTIG: Der 95% Normbereich umfasst $\bar{x} \pm 2 \times s = 64.9 \pm 9 = 55.9 ~bis ~ 73.9 Jahre$* 
+
+e) Ein 30-minütiges Training mit selbst gewählter Intensität, reduziert bei älteren Frauen mit arterieller Hypertonie den systolischen Blutdruck im Durchschnitt signifikant um 2.7 bis 9.3 mmHg in den ersten 6 Stunden nach dem Training. *RICHTIG. Siehe Results, Zeilen 4 und 5*  
+
+<br/>
+
+# Akupressur bei Dysmenorrhöe
+
+Lesen Sie das Abstract der Studie Blödt, S., Pach, D., Eisenhart-Rothe, S. V., Lotz, F., Roll, S., Icke, K., & Witt, C. M. (2018). Effectiveness of app-based self-acupressure for women with menstrual pain compared to usual care: a randomized pragmatic trial. *American journal of obstetrics and gynecology*, 218(2), 227.e1–227.e9. https://doi.org/10.1016/j.ajog.2017.11.570   
+
+Erklärung der verwendeten Abkürzungen:  
+
+* NRS: Numerical rating scale für Schmerz, entspricht VAS 0 - 10
+
+Background: Primary dysmenorrhea is common among women of reproductive age. Nonsteroidal anti-inflammatory drugs and oral contraceptives are effective treatments, although the failure rate is around 20% to 25%. Therefore additional evidence-based treatments are needed. In recent years, the use of smartphone applications (apps) has increased rapidly and may support individuals in self-management strategies.   
+
+Objective: We aimed to investigate the effectiveness of app-based self-acupressure in women with menstrual pain.   
+
+Materials and methods: A 2-armed, randomized, pragmatic trial was conducted from December 2012 to April 2015 with recruitment until August 2014 in Berlin, Germany, among women aged 18 to 34 years with self-reported cramping pain of 6 or more on a numeric rating scale (NRS) for the worst pain intensity during the previous menstruation. After randomization, women performed either app-based self-acupressure (n = 111) or followed usual care only (n = 110) for 6 consecutive menstruation cycles. The primary outcome was the mean pain intensity (NRS 0-10) on the days with pain during the third menstruation. Secondary outcomes [...gekürzt]
+
+Results: We included 221 women (mean age, 24.0 years; standard deviation [SD], 3.6 years). The mean pain intensity difference during the third menstruation was statistically significant in favor of acupressure (acupressure: 4.4; 95% confidence interval [CI], 4.0-4.7; usual care 5.0; 95% CI, 4.6-5.3; mean difference -0.6; 95% CI, - 1.2 to -0.1; P = .026). [...gekürzt]   
+
+## Aufgabe
+
+Welche Aussagen sind richtig?   
+
+a) Die Alternativhypothese für diese Studie lautet $H_A: \bar{x}_{accupressure} < \bar{x}_{usual~care}$. Die Schmerzen sind kleiner bei Anwendung der APP-basierten Akupressur als mit den üblichen Massnahmen.   
+b) Der t-Test für unabhängige Daten kann hier zur Hypothesenprüfung angewendet werden.  
+c) [Die Studie zeigt, dass wenn junge Frauen, die an Dysmenorrhöe leiden, über mehrere Monate während der Menstruation eine APP-basierte Akupressur anwenden, die Schmerzen abnehmen (steht nicht im Abstract).] Bei der dritten Menstruation (nach Versuchsbeginn) sind die Schmerzen in der Akupressurgruppe -1.2 bis -0.1  Punkte auf der Rating-Skala tiefer als in der Gruppe, welche die üblichen Massnahmen (usual care) ergreift.  
+d) Wenn junge Frauen mit Dysmenorrhöe eine APP-basierte Akupunktur anwenden, können sie erwarten, dass ihre Schmerzen um durchschnittlich -1.2 bis -0.1 Punkte auf der NRS-Skala abnehmen.  
+e) Kann die Frage, ob der Effekt von APP-basierter Akupressur bei Menstruationsbeschwerden klinisch relevant ist, auf Grund der vorliegenden Angaben beurteilt werden?   
+
+<br/>
+
+## Lösung
+
+a) Die Alternativhypothese für diese Studie lautet $H_A: \bar{x}_{accupressure} < \bar{x}_{usual~care}$. Die Schmerzen sind kleiner bei Anwendung der APP-basierten Akupressur als mit den üblichen Massnahmen. *FALSCH. Die Hypothese muss entsprechend der Fragestellung zweiseitig formuliert werden $H_A: \bar{x}_{accupressure} \neq \bar{x}_{usual~care}$*   
+
+b) Der t-Test für unabhängige Daten kann hier zur Hypothesenprüfung angewendet werden. *RICHTIG*  
+
+c) [Die Studie zeigt, dass wenn junge Frauen, die an Dysmenorrhöe leiden, über mehrere Monate während der Menstruation eine APP-basierte Akupressur anwenden, die Schmerzen abnehmen (steht nicht im Abstract).] Bei der dritten Menstruation (nach Versuchsbeginn) sind die Schmerzen in der Akupressurgruppe -1.2 bis -0.1  Punkte auf der Rating-Skala tiefer als in der Gruppe, welche die üblichen Massnahmen (usual care) ergreift. *FALSCH: Das Konfidenzintervall bezieht sich nicht auf die Stichprobe, sondern auf die Population, siehe Antwort d)*   
+
+d) Wenn junge Frauen mit Dysmenorrhöe, die bisher die üblichen Massnahmen zur Schmerzlinderung ergriffen haben, eine APP-basierte Akupunktur anwenden, können sie erwarten, dass ihre Schmerzen um durchschnittlich -1.2 bis -0.1 Punkte auf der NRS-Skala abnehmen. *RICHTIG*  
+
+e) Kann die Frage, ob der Effekt von APP-basierter Akupressur bei Menstruationsbeschwerden klinisch relevant ist, auf Grund der vorliegenden Angaben beurteilt werden? *NEIN. Um die klinische Relevanz zu beurteilen, müsste ein vergleich mit dem MCID für Schmerzen bei Dysmenorrhoe gemacht werden. Dieser ist gemäss aktueller Literatur nicht bekannt. Das 95%-Konfidenzintervall beinhaltet einen plausiblen Wert für die durchschnittliche Schmerzreduktion von -0.1 Punkten auf der NRS-Skala. Das ist ein sehr kleiner Wert.*   
+
+<br/>
+
+# Behandlung bei Anorexie {.tabset}
+
+Hat kognitive Verhaltenstherapie einen positiven Effekt auf die Gewichtszunahme bei weiblichen Teenagern, die an Anorexie leiden?
+
+Zu dieser Frage wurde eine Studie durchgeführt, an der 29 weibliche Teenager teilnahmen. Die Mädchen nahmen über mehrere Wochen an therapeutischen Sitzungen teil und ihr Gewicht wurde vor und nach der Behandlungsperiode gemessen. Die Differenz wurde in der Variablen `change` (= Gewicht nach Therapie minus Gewicht vor Therapie) gespeichert. Anschliessend wurde ein Hypothesentest durchgeführt, dessen Output hier dargestellt ist (Signifikanzniveau $\alpha = 0.05$). Zudem sind die wichtigsten Kennzahlen angegeben. 
+
+```{r}
+anorexia <- read_csv("./data/AnorexiaLong.csv") 
+
+cog <- anorexia %>% 
+  filter(therapy == "cog") 
+
+jmv::ttestOneS(
+  data = cog,
+  vars = change,
+  hypothesis = "gt",
+  desc = TRUE
+)
+```
+
+## Aufgabe
+
+Welche Antworten sind richtig?  
+
+a) Es wurde ein Einstichproben-t-Test durchgeführt. Die Nullhypothese für diesen Test lautet $H_0: \mu = 0$?   
+b) Die Alternativhypothese wurde einseitig formuliert $H_A: \mu > 0$.   
+c) Wenn die Alternativhypothese zweiseitig formuliert wäre, würde dies den $p$-Wert verdoppeln auf 0.035.  
+d) Wenn Sie auf Grund des $p$-Werts die Nullhypothese verwerfen, besteht die Gefahr, dass Sie einen Fehler 2. Art begehen.  
+e) Die Wahrscheinlichkeit einen Fehler 1. Art zu begehen liegt bei 1.75%.
+f) Bei der geringen Stichprobenzahl von $n$ = 29, würden wir auf Grund der Kennzahlen unter `Descriptives`, eher einen nichtparametrischen Test wählen.   
+
+<br/>
+
+## Lösung  
+
+a) Es wurde ein Einstichproben-t-Test durchgeführt. Die Nullhypothese für diesen Test lautet $H_0: \mu = 0$? *RICHTIG*   
+
+b) Die Alternativhypothese wurde einseitig formuliert $H_A: \mu > 0$. *RICHTIG. siehe Output*   
+
+c) Wenn die Alternativhypothese zweiseitig formuliert wäre, würde dies den $p$-Wert verdoppeln auf 0.035. *RICHTIG*   
+
+d) Wenn Sie auf Grund des $p$-Werts die Nullhypothese verwerfen, besteht die Gefahr, dass Sie einen Fehler 2. Art begehen. *FALSCH. Wenn wir die Nullhypothese verwerfen obwohl sie wahr ist, begehen wir einen Fehler 1. Art.*   
+e) Die Wahrscheinlichkeit, bei diesem Studiendesign einen Fehler 1. Art zu begehen, liegt bei 1.75%. *FALSCH: Die Wahrscheinlichkeit, einen Fehler 1. Art zu begehen entspricht dem Signifikanzniveau $\alpha$ und beträgt 5%.*   
+
+f) Bei der geringen Stichprobenzahl von $n$ = 29, würden wir auf Grund der Kennzahlen unter `Descriptives`, eher einen nichtparametrischen Test wählen. *RICHTIG. Mittelwert und Median weichen stark voneinander ab, was ein Hinweis darauf ist, dass die Voraussetzung für Normalverteilung der Prüfgrösse `change` nicht erfüllt ist.*   
+
+<br/>
+
+# Autofahren und Mobiltelefon 1 {.tabset}
+
+In einem Experiment wurde untersucht, ob die Verwendung eines Mobiltelefons die Reaktionsgeschwindigkeit bei Autofahrer:innen beeinträchtigt. 64 Studierende wurden zufällig einer Mobiltelefongruppe (`cell`, n = 32) und einer Kontrollgruppe (`control`, n = 32) zugeordnet. Während die Proband:innen in einem Fahrsimulator sassen, leuchtete in unregelmässigen Abständen ein rotes oder ein grünes Signallicht. So bald ein rotes Signallicht leuchtete, mussten die Proband:innen so rasch wie möglich das Bremspedal bedienen. Die Kontrollgruppe hörte Musik oder Audiobücher, die Mobiltelefongruppe führte ein Gespräch zu politischen Themen mit einer Person in einem anderen Raum.   
+
+Das Experiment mass die durchschnittliche Reaktionszeit über mehrere Versuche bei jeder Probandin. Der Durchschnitt für alle Versuche und alle Proband:innen ergab eine Reaktionszeit von 585.2 ms für die Mobiltelefongruppe und von 533.7 ms für die Kontrollgruppe.  
+
+`R`-Output für den Mittelwertsvergleich für Mobiltelefongruppe und Kontrollgruppe:
+
+```{r}
+reactime <- read_csv("./data/CellPhoneReactionTime.csv")
+
+# jmv::ttestIS(
+#   formula = ReactionTime ~ Group,
+#   data = reactime,
+#   vars = ReactionTime,
+#   desc = TRUE
+# )
+
+t.test(ReactionTime ~ Group, data = reactime)
+```
+
+## Aufgabe  
+
+Welche Aussagen sind richtig? (Signifikanzniveau $\alpha = 0.05$)  
+
+a) Die Alternativhypothese lautet $H_A: \mu_{cell} \neq \mu_{control}$.  
+b) Die Wahrscheinlichkeit, eine Teststatistik $t$ von 2.63 oder noch grösser zu erhalten, beträgt 1.095%.  
+c) Die Daten liefern Evidenz dafür, dass die Verwendung eines Mobiltelefons beim Autofahren die Reaktionszeit um durchschnittlich 51.95 [95%-CI 12.32, 90.87] ms im Vergleich zur Kontrollgruppe verkürzt.   
+d) 95%-Konfidenzintervall und p-Wert liefern widersprüchliche Angaben.  
+
+<br/>   
+
+## Lösung
+
+a) Die Alternativhypothese lautet $H_A: \mu_{cell} \neq \mu_{control}$. *RICHTIG*     
+
+b) Die Wahrscheinlichkeit, eine Teststatistik $t$ von 2.63 oder noch grösser zu erhalten, beträgt 1.095%. *RICHTIG*     
+
+c) Die Daten liefern Evidenz dafür, dass die Verwendung eines Mobiltelefons beim Autofahren die Reaktionszeit um durchschnittlich 51.95 [95%-CI 12.32, 90.87] ms im Vergleich zur Kontrollgruppe verkürzt. *FALSCH. Der Vergleich der Mittelwerte beider Gruppen ergibt, dass sich die Reaktionszeit verlängert und nicht verkürzt.*     
+
+d) 95%-Konfidenzintervall und p-Wert liefern widersprüchliche Angaben. *FALSCH: Der $p$-Wert ist kleiner als das Signifikanzniveau und das 95%-Konfidenzintervall enthält den Nullwert nicht. Der $p$-Wert unterstützt die Aussage des 95%-CI.*   
+
+<br/>   
+
+# Autofahren und Mobiltelefon 2 {.tabset}   
+
+In einem Experiment wurde untersucht, ob die Verwendung eines Mobiltelefons die Reaktionsgeschwindigkeit bei Autofahrer:innen beeinträchtigt. Bei 32 Studierenden wurden die Reaktionszeiten bei der Verwendung eines Mobiltelefons und beim Hören von Musik oder Audiobüchern gemessen. Während die Proband:innen in einem Fahrsimulator sassen, leuchtete in unregelmässigen Abständen ein rotes oder ein grünes Signallicht. So bald ein rotes Signallicht leuchtete, mussten die Proband:innen so rasch wie möglich das Bremspedal bedienen. 
+
+```{r, fig.align='center'}
+cell <- read_csv("./data/PairedReactionTime.csv")
+
+cell[1:4, 1:3] %>% 
+  kbl(caption = "Erste vier Zeilen des Datensatzes") %>% 
+  kable_styling(full_width = FALSE)
+
+cell %>% 
+  select(-Diff) %>% 
+  pivot_longer(
+    cols = c(No, Yes),
+    names_to = "Cellphone", 
+    values_to = "ms"
+  ) %>% 
+  group_by(Cellphone) %>% 
+  summarise(
+    n = n(),
+    M = mean(ms),
+    s = sd(ms), 
+    SE = s/sqrt(n)
+  ) %>% 
+  kbl(digits = 2, caption = "Reaktionszeiten mit und ohne Mobiltelefon") %>% 
+  kable_styling(full_width = FALSE)
+
+cell %>% 
+  select(-Diff) %>% 
+  pivot_longer(
+    cols = c(No, Yes),
+    names_to = "Cellphone", 
+    values_to = "ms"
+  ) %>% 
+  ggplot(., aes(y = ms, x = Cellphone)) +
+  geom_boxplot() +
+  ggtitle("Reaktionszeiten mit und ohne Mobiltelefon")
+```
+
+## Aufgabe
+
+a) Bei den beiden durchschnittlichen Reaktionszeiten mit und ohne Mobiltelefon, handelt es sich um verbundene (abhängige) Stichproben.   
+b) Die Nullhypothese lautet $H_0: \mu_{no} = \mu_{yes}$.   
+c) Der Einstichproben-t-Test kann als Hypothesentest zur Anwendung kommen.  
+d) Die Reaktionszeit ohne Mobiltelefon ist um durchschnittlich 50.63 ms kürzer.  
+e) Der t-Test ergibt eine Teststatistik von t = 5.456. Dieses Resultat ist statistisch signifikant (auf dem Signifikanzniveau $\alpha = 0.05$).  
+f) Der p-Wert für t = 5.456 ist kleiner als 0.0001. Tipp: df = n - 1 = 31.  
+g) Damit ein t-Test angewendet werden darf, müssen beide Stichprobendaten `No`und `Yes` normalverteilt sein.  
+
+<br/>
+
+## Lösung
+
+a) Bei den beiden durchschnittlichen Reaktionszeiten mit und ohne Mobiltelefon, handelt es sich um verbundene (abhängige) Stichproben. *RICHTIG*   
+
+b) Die Nullhypothese lautet $H_0: \mu_{no} = \mu_{yes}$. *FALSCH. Die Nullhypothese lautet $H_0: \mu_{diff} = 0$*    
+
+c) Der Einstichproben-t-Test kann als Hypothesentest zur Anwendung kommen. *RICHTIG. Die Prüfgrösse ist der Mittelwert der paarweisen Differenzen.*   
+
+d) Die Reaktionszeit ohne Mobiltelefon ist um durchschnittlich 50.63 ms kürzer. *RICHTIG. Das ist die Differenz der beiden Mittelwerte.*   
+
+e) Der t-Test ergibt eine Teststatistik von t = 5.456. Dieses Resultat ist statistisch signifikant (auf dem Signifikanzniveau $\alpha = 0.05$).  
+f) Der p-Wert für t = 5.456 ist kleiner als 0.0001. Tipp: df = n - 1 = 31. *RICHTIG.*
+
+```{r, echo=TRUE}
+2 * (1 - pt(5.456, df = 31))
+```
+
+g) Damit ein t-Test angewendet werden darf, müssen beide Stichprobendaten `No`und `Yes` normalverteilt sein. *FALSCH. Die paarweisen Differenzen müssen annähernd normalverteilt sein.*    
+
+<br/>
+
+

@@ -21,14 +21,25 @@ rm(list = ls())
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 
 library(tidyverse)
-library(jmv)
 library(knitr)
 library(kableExtra)
 library(openintro)
 library(patchwork)
 ```
 
-Übungssammlung zur deskriptiven Statistik
+# Übungssammlung zur deskriptiven Statistik  
+
+Die Übungen sind für eher fortgeschrittene Studierende. Ich empfehle, für diese Übungen das IDE [RStudio - Open Source Edition](https://www.rstudio.com/products/rstudio/) als Arbeitsumgebung zu installieren. Zudem erleichtern Pakete aus dem [Tidyverse](https://www.tidyverse.org/) die Arbeiten erheblich. Das Paket enthält u.a. folgende Libraries:  
+
+* [ggplot2](https://ggplot2.tidyverse.org/) verwenden wir für Grafiken     
+* [readr](https://readr.tidyverse.org/) verwenden wir für das Einlesen von Datensätzen und   
+* [dplyr](https://dplyr.tidyverse.org/) verwenden wir für die Bearbeitung von Daten.  
+
+```{r, echo=TRUE, eval=FALSE}
+install.packages(tidyverse)
+library(tidyverse)
+```
+<br/>
 
 # Todesursachen Schweiz {.tabset}   
 
@@ -44,6 +55,8 @@ b) In welchen Kategorien finden Sie die grössten Unterschiede in der relativen 
 c) Erstellen Sie eine Grafik zur Häufigkeit der Todesursachen nach Kategorien.
 
 **Hinweis:** Diese Aufgabe ist einfacher in Excel zu lösen. Verwenden Sie für Excel die Datei `todesursachen_CH_kurz.xlsx` 
+
+<br/>
 
 ## Lösung
 
@@ -105,4 +118,81 @@ todesursachen %>%
   ylab("") +
   ggtitle("Todesursachen Schweiz 2000-2019", subtitle = "Bundesamt für Statistik")
 ```
+
+<br/>
+
+# Covid-19 {.tabset}   
+
+Der Datensatz `covid_20220222.csv` umfasst die täglichen Zusammenfassungen von Coronavirus-Fällen (confirmed, death, recovered) für 188 Länder. Die Daten beginnen am 22.1.2020 und enden am 22.2.2022 (letzter Download).
+
+Interessierte können die aktuellste Version mit diesem Code herunterladen.  
+
+Wir arbeiten bei dieser Übung mit folgenden Variablen:  
+
+|Variable|Erläuterung|
+|:-------|:----------|
+|date|Datum, Format YYYY-MM-DD
+|country|Land|
+|type|Art der Fälle: confirmed, death, recovered|
+|cases| Anzahl der Fälle an einem bestimmten Datum|
+|population|
+
+
+```{r, eval=FALSE}
+# aktuelle Daten, not run ------------------------------------------------------
+devtools::install_github("RamiKrispin/coronavirus")
+library(coronavirus)
+```
+
+## Aufgabe  
+
+a) Welchen Eintrag zu Covid-Fällen liefert der 31.1.2022 in der Schweiz?  
+b) Wie hoch war an diesem Tag der prozentuale Anteil an bestätigten Covid-Fällen an der Gesamtbevölkerung?   
+c) Wie viele bestätigte Fälle gab es in der Schweiz zwischen dem 22.1.2020 und dem 31.1.2022 und wie gross ist dieser Anteil an der Gesamtbevölkerung?   
+
+## Lösung 
+
+a) Wie viele Covid-Fälle gab es am 31.1.2022 in der Schweiz?   
+
+```{r}
+## Datensatz einlesen ----------------------------------------------------------
+covid <- readr::read_csv("./data/covid_20220222.csv")
+
+## Subset für CH erstellen -----------------------------------------------------
+covid_CH <- covid %>% 
+  filter(country == "Switzerland")
+
+## Daten für das gewünschte Datum filtern --------------------------------------
+covid_CH %>% 
+  filter(date == "2022-01-31") %>% 
+  select(date, country, type, cases) %>% 
+  kbl(caption = "Eintrag Covid-Fälle für die Schweiz am 31.1.2022") %>% 
+  kable_styling(full_width = FALSE)
+```
+
+b) Wie hoch war an diesem Tag der prozentuale Anteil an bestätigten Covid-Fällen an der Gesamtbevölkerung?   
+
+```{r}
+covid_CH %>% 
+  filter(date == "2022-01-31" & type == "confirmed") %>%
+  summarise(
+    Proz_Anteil = cases/population * 100
+  ) %>% 
+  kbl(digits = 2, caption = "Prozenualer Anteil der Bevölkerung, die am 31.1.2022 in der Schweiz an Covid erkrankt ist") %>% 
+  kable_styling()
+```
+
+c) Wie viele bestätigte Fälle gab es in der Schweiz zwischen dem 22.1.2020 und dem 31.1.2022 und wie gross ist dieser Anteil an der Gesamtbevölkerung?  
+
+```{r}
+covid_CH %>% 
+  filter(type == "confirmed") %>% 
+  summarise(
+    Summe = sum(cases),
+    Proz_Anteil = (sum(cases)/max(population)) * 100
+  ) %>% 
+  kbl(caption = "Gesamtzahl bestätigte Fälle Covid-19 zwischen 22.1.2020 und 22.2.2022") %>% 
+  kable_styling()
+```
+
 
