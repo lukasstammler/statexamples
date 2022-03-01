@@ -23,8 +23,10 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 library(tidyverse)
 library(knitr)
 library(kableExtra)
-library(openintro)
-library(patchwork)
+library(openintro)   # for simple areas under curve
+library(patchwork)   # arrange ggplot objects
+library(rstatix)     # t.test output as tibble 
+library(stargazer)   # summary tables and regression tables
 ```
 
 
@@ -39,7 +41,7 @@ Diese formative Prüfung dient der Selbstkontrolle und der Prüfungsvorbereitung
 <br/>
 <br/>
 
-# Haifischattacken 1 {.tabset}
+# DESK Haifischattacken 1 {.tabset}
 
 ## Aufgabe
 
@@ -69,7 +71,7 @@ shark.tab %>%
   column_spec(1, italic = T) # format first column
 ```
 
-Welche Aussagen sind richtig?   
+Beurteilen Sie jede Frage als FALSCH oder RICHTIG?   
 
 a) Die Variable `Jahr` ist qualitativ-nominal.  
 b) Die Variable `letal` ist quantitativ-diskret.   
@@ -85,7 +87,7 @@ d) Die Werte in der Spalte `Prozent.letal` sind relative Häufigkeiten. RICHTIG
 
 <br/>
 
-# Haifischattacken 2 {.tabset}    
+# DESK Haifischattacken 2 {.tabset}    
 
 ## Aufgabe
 
@@ -117,7 +119,7 @@ attacks.tab %>%
 Welche Aussagen sind richtig?   
 
 a) Die Variable, die in der Tabelle zusammenfassend dargestellt wird, ist die `Region von Haifischattacken`.   
-b) Diese Variable ist quantitative-diskret.  
+b) Diese Variable ist quantitativ-diskret.  
 c) 55% der Haifischattacken erfolgen in Florida, Australien und Hawaii.   
 
 ## Lösung 
@@ -125,16 +127,18 @@ c) 55% der Haifischattacken erfolgen in Florida, Australien und Hawaii.
 Welche Aussagen sind richtig?   
 
 a) Die Variable, die in der Tabelle zusammenfassend dargestellt wird, ist die `Region von Haifischattacken`. JA     
-b) Diese Variable ist quantitativ-diskret. NEIN. Diese Variable ist qualitativ-nominal. Verwechseln Sie nicht die Häufigkeit des Auftretens mit Werten für die Variable. Die Zahlen geben bloss wider, wie oft ein Haifischangriff in den verschiedenen Regionen beobachtet wurde.    
+b) Diese Variable ist quantitativ-diskret. FALSCH. Diese Variable ist qualitativ-nominal. Verwechseln Sie nicht die Häufigkeit des Auftretens mit Werten für die Variable. Die Zahlen geben bloss wider, wie oft ein Haifischangriff in den verschiedenen Regionen beobachtet wurde.    
 c) 55% der Haifischattacken erfolgen in Florida, Australien und Hawaii. JA.  
 
 <br/>
 
-# Haifischattacken 3 {.tabset}
+# DESK Haifischattacken 3 {.tabset}
 
 ## Aufgabe  
 
-Welche grafische Darstellung würden Sie für die Verteilung der Haifischattacken in den verschiedenen Regionen wählen?  
+Die Tabelle gibt eine Übersicht über die Häufigkeit von Haifischattacken in verschiedenen Regionen (2004 - 2013). Quelle: [International Shark Attack File](https://www.floridamuseum.ufl.edu/shark-attacks/trends/location/world/) 
+
+Welche grafische Darstellung würden Sie für die Häufigkeit der Haifischattacken in den verschiedenen Regionen wählen?  
 
 Welche Antwort ist richtig?  
 
@@ -158,7 +162,7 @@ ggplot(attacks, aes(x = reorder(Region, Haeufigkeit), y = Haeufigkeit)) +
 
 <br/>
 
-# Fernsehzeit 1 {.tabset}
+# DESK Fernsehzeit 1 {.tabset}
 
 ## Aufgabe  
 
@@ -212,7 +216,7 @@ f) Welche Kennzahl der zentralen Tendenz würden Sie hier als "typischen" Wert a
 
 <br/>
 
-# Songs 1 {.tabset}
+# DESK Songs 1 {.tabset}
 
 ## Aufgabe   
 
@@ -282,7 +286,7 @@ normTail(m = m, s = s, M = c(m-2*s, m+2*s), col = "lightblue", main = "Zentraler
 
 <br/>
 
-# Songs 2 {.tabset}
+# INF Songs 2 {.tabset}
 
 ## Aufgabe  
 
@@ -308,7 +312,7 @@ b) Kritisieren Sie die Aufgabe a). Ist es korrekt, von den vorliegenden Stichpro
 
 <br/>
 
-# Peter im Service {.tabset}
+# NORM Sommerjob {.tabset}
 
 Peter arbeitet seit mehreren Jahren in der Sommersaison in seinen Semesterferien im Service eines Restaurants in einem Touristengebiet. Je nach Schicht (Frühstück. Mittag, Abend) variiert sein Lohn inkl. Trinkgeld. Wenn er am Wochenende arbeitet, erhält er zusätzlich eine Wochendendzulage. Die Erfahrung aus den vergangenen Jahren zeigt, dass das Gehalt für eine Schicht einer Wahrscheinlichkeitsverteilung mit dem Mittelwert $\mu = 240$ SFr. und der Standardabweichung $\sigma = 80$ SFr. folgt.  
 
@@ -374,7 +378,7 @@ normTail(m = 240, s = 14.14, U = 240 + 2.4752 * 14.14, col = "lightblue", xLab =
 
 <br/>   
 
-# Fernsehzeit 2 {.tabset}
+# INF Fernsehzeit 2 {.tabset}
 
 2012 wurde in einer Umfrage die Frage gestellt: "Wieviele Stunden schauen Sie, an einem durchschnittlichen Tag, Sendungen am Fernsehen?". Die Ergebnisse sind in der Tabelle dargestellt.     
 
@@ -415,9 +419,9 @@ e) Für eine Halbierung von $SE$ müsste der Stichprobenumfang auf 5192 erhöht 
 
 <br/>  
 
-# HIIT
+# NHT HIIT
 
-Ist HIIT (Hoch-intensitäts Interval Training) effektiver für die Senkung von arterieller Hypertonie (Bluthochdruck) als Ausdauertraining. Anhand einer Studie mit 120 Proband:innen soll diese Frage beantwortet werden. Die Proband:innen werden randomisiert einer Gruppe (n = 60), die über 12 Wochen ein HIIT-Training absolviert und einer Gruppe (n = 60), die über den gleichen Zeitraum ein Ausdauertraining auf dem Fahradergometer absolviert, zugeordnet. Zu Beginn und am Ende der Trainingsperiode wird der arterielle Blutdruck gemessen. Eine Senkung des arteriellen Blutdrucks wird als positiver Effekt gewertet.      
+Ist HIIT (Hoch-intensitäts Interval Training) effektiver für die Senkung von arterieller Hypertonie (Bluthochdruck) als Ausdauertraining. Anhand einer Studie mit 120 Proband:innen, die an arterieller Hypertonie leiden, soll diese Frage beantwortet werden. Die Proband:innen werden randomisiert einer Gruppe (n = 60), die über 12 Wochen ein HIIT-Training absolviert und einer Gruppe (n = 60), die über den gleichen Zeitraum ein Ausdauertraining auf dem Fahradergometer absolviert, zugeordnet. Zu Beginn und am Ende der Trainingsperiode wird der arterielle Blutdruck gemessen. Eine Senkung des arteriellen Blutdrucks wird als positiver Effekt gewertet.      
 
 ## Aufgabe
 
@@ -441,7 +445,7 @@ e) Alleine schon wegen des kleinen Stichprobenumfangs muss ein nicht-parametrisc
 
 <br/>
 
-# Studie: Training und Blutdruck {.tabset}  
+# NHT Studie: Training und Blutdruck {.tabset}  
 
 Lesen Sie das Abstract der Studie: Costa, I., Schwade, D., Macêdo, G., Browne, R., Farias-Junior, L. F., Freire, Y. A., Sócrates, J., Boreskie, K. F., Duhamel, T. A., & Caldas Costa, E. (2019). Acute antihypertensive effect of self-selected exercise intensity in older women with hypertension: a crossover trial. *Clinical interventions in aging*, 14, 1407–1418. https://doi.org/10.2147/CIA.S207254  
 
@@ -480,7 +484,7 @@ e) Ein 30-minütiges Training mit selbst gewählter Intensität, reduziert bei �
 
 <br/>
 
-# Akupressur bei Dysmenorrhöe
+# NHT Akupressur bei Dysmenorrhöe
 
 Lesen Sie das Abstract der Studie Blödt, S., Pach, D., Eisenhart-Rothe, S. V., Lotz, F., Roll, S., Icke, K., & Witt, C. M. (2018). Effectiveness of app-based self-acupressure for women with menstrual pain compared to usual care: a randomized pragmatic trial. *American journal of obstetrics and gynecology*, 218(2), 227.e1–227.e9. https://doi.org/10.1016/j.ajog.2017.11.570   
 
@@ -522,7 +526,7 @@ e) Kann die Frage, ob der Effekt von APP-basierter Akupressur bei Menstruationsb
 
 <br/>
 
-# Behandlung bei Anorexie {.tabset}
+# NHT Verhaltenstherapie bei Anorexie {.tabset}
 
 Hat kognitive Verhaltenstherapie einen positiven Effekt auf die Gewichtszunahme bei weiblichen Teenagern, die an Anorexie leiden?
 
@@ -570,7 +574,7 @@ f) Bei der geringen Stichprobenzahl von $n$ = 29, würden wir auf Grund der Kenn
 
 <br/>
 
-# Autofahren und Mobiltelefon 1 {.tabset}
+# NHT Autofahren und Mobiltelefon 1 {.tabset}
 
 In einem Experiment wurde untersucht, ob die Verwendung eines Mobiltelefons die Reaktionsgeschwindigkeit bei Autofahrer:innen beeinträchtigt. 64 Studierende wurden zufällig einer Mobiltelefongruppe (`cell`, n = 32) und einer Kontrollgruppe (`control`, n = 32) zugeordnet. Während die Proband:innen in einem Fahrsimulator sassen, leuchtete in unregelmässigen Abständen ein rotes oder ein grünes Signallicht. So bald ein rotes Signallicht leuchtete, mussten die Proband:innen so rasch wie möglich das Bremspedal bedienen. Die Kontrollgruppe hörte Musik oder Audiobücher, die Mobiltelefongruppe führte ein Gespräch zu politischen Themen mit einer Person in einem anderen Raum.   
 
@@ -614,7 +618,7 @@ d) 95%-Konfidenzintervall und p-Wert liefern widersprüchliche Angaben. *FALSCH:
 
 <br/>   
 
-# Autofahren und Mobiltelefon 2 {.tabset}   
+# NHT und Mobiltelefon 2 {.tabset}   
 
 In einem Experiment wurde untersucht, ob die Verwendung eines Mobiltelefons die Reaktionsgeschwindigkeit bei Autofahrer:innen beeinträchtigt. Bei 32 Studierenden wurden die Reaktionszeiten bei der Verwendung eines Mobiltelefons und beim Hören von Musik oder Audiobüchern gemessen. Während die Proband:innen in einem Fahrsimulator sassen, leuchtete in unregelmässigen Abständen ein rotes oder ein grünes Signallicht. So bald ein rotes Signallicht leuchtete, mussten die Proband:innen so rasch wie möglich das Bremspedal bedienen. 
 
@@ -652,6 +656,11 @@ cell %>%
   ggplot(., aes(y = ms, x = Cellphone)) +
   geom_boxplot() +
   ggtitle("Reaktionszeiten mit und ohne Mobiltelefon")
+
+# cell %>% 
+#   rstatix::t_test(Diff ~ 1, mu = 0, detailed = TRUE) %>% 
+#   kbl() %>% 
+#   kable_styling()
 ```
 
 ## Aufgabe
@@ -677,14 +686,198 @@ c) Der Einstichproben-t-Test kann als Hypothesentest zur Anwendung kommen. *RICH
 d) Die Reaktionszeit ohne Mobiltelefon ist um durchschnittlich 50.63 ms kürzer. *RICHTIG. Das ist die Differenz der beiden Mittelwerte.*   
 
 e) Der t-Test ergibt eine Teststatistik von t = 5.456. Dieses Resultat ist statistisch signifikant (auf dem Signifikanzniveau $\alpha = 0.05$).  
+*RICHTIG.*
+
 f) Der p-Wert für t = 5.456 ist kleiner als 0.0001. Tipp: df = n - 1 = 31. *RICHTIG.*
 
 ```{r, echo=TRUE}
 2 * (1 - pt(5.456, df = 31))
 ```
 
-g) Damit ein t-Test angewendet werden darf, müssen beide Stichprobendaten `No`und `Yes` normalverteilt sein. *FALSCH. Die paarweisen Differenzen müssen annähernd normalverteilt sein.*    
+g) Damit ein t-Test angewendet werden darf, müssen beide Stichprobendaten `No`und `Yes` normalverteilt sein. *FALSCH. Die paarweisen Differenzen `Diff` müssen annähernd normalverteilt sein.*    
 
 <br/>
 
+# SLR Kraft von Frauen 1 {.tabset}  
+
+Wie misst man die Kraft eines Menschen? Eine Möglichkeit besteht darin, das maximale Gewicht (1-RM, One-Repetition-Maximum) zu finden, das ein Mensch beim Bankdrücken (bench press) stemmen kann. Allerdings kann dieses Verfahren für Menschen, die mit der sauberen Durchführung dieser Übung wenig vertraut sind, riskant sein und zu Verletzungen führen. Gibt es eine Variable, die einfacher zu messen und weniger riskant ist und die trotzdem eine gute Vorhersage für das 1-RM beim Bankdrücken ermöglicht?   
+
+Es gibt zahlreiche Studien zu dieser Frage zur Kraft von Männern, aber nur wenige zur Kraft von Frauen. Eine Ausnahme ist eine Studie mit 57 weiblichen Athletinnen (Alter 14-18 Jahre), die an der Georgia High School durchgeführt wurde [1]. Neben anderen Variablen wurden auch solche gemessen, die einfacher und sicherer zu messen sind als das 1-RM und die trotzdem gut mit dem 1-RM korrelieren. Eine dieser Variablen ist die Anzahl der Wiederholungen, die eine weibliche Athletin mit einem Gewicht von 27.22 kg (im Original 60 lbs) durchführen kann, bevor sie soweit ermüdet ist, dass keine Wiederholung mehr möglich ist.  
+
+[1] Horvat, M., Franklin, C., & Born, D. (2007). Predicting strength in high school women athletes. *Journal of strength and conditioning research*, 21(4), 1018–1022. https://doi.org/10.1519/R-20776.1   
+
+Das Streudiagramm zeigt den Zusammenhang zwischen der Anzahl Wiederholungen beim Bankdrücken und einem Gewicht von 27.22 kg und dem 1-RM.   
+
+
+```{r, fig.align='center'}
+# agresti p. 594
+strength <- read_csv("./data/femaleAthletes.csv")
+
+## convert units ---------------------------------------------------------------
+# inch.to.cm <- 2.54
+# lbs.to.kg <- 0.453592
+# 
+# strength <- strength %>% 
+#   mutate(
+#     HT_cm = HT_IN * inch.to.cm,
+#     WT_kg = WT_lbs * lbs.to.kg,
+#     maxBP_kg = maxBP_lbs * lbs.to.kg,
+#     maxLP_kg = maxLP_lbs * lbs.to.kg
+#   ) 
+# write_csv(strength, "./data/femaleAthletes.csv")
+## -----------------------------------------------------------------------------
+
+ggplot(strength, aes(x = BP60, y = maxBP_kg)) +
+  geom_point(size = 3, color = "steelblue", alpha = .5) +
+  xlab("Anzahl Wiederholungen mit 27.22kg") +
+  ylab("1-RM (kg)") +
+  ggtitle("Bankdrücken bei jungen Athletinnen, n = 57")
+
+# cor(strength$BP60, strength$maxBP_kg)
+```
+
+## Aufgabe   
+
+Welche Aussagen sind richtig?  
+
+a) Im Streudiagramm ist die Anzahl der Wiederholungen die abhängige und das 1-RM die unabhängige Variable.   
+b) Es besteht ein positiver linearer Zusammenhang zwischen der Anzahl Wiederholungen mit 27.22 kg und dem 1-RM.   
+c) Der Zusammenhang zwischen der Anzahl Wiederholungen mit 27.22 kg und dem 1-RM ist schwach.   
+
+## Lösung
+
+a) Im Streudiagramm ist die Anzahl der Wiederholungen die abhängige und das 1-RM die unabhängige Variable. *FALSCH. Es ist genau umgekehrt. Die Anzahl Wiederholungen mit 27.22kg dienen als Prädiktor (unabhängige Variable) für das 1-RM als abhängige Variable.*  
+
+b) Es besteht ein positiver linearer Zusammenhang zwischen der Anzahl Wiederholungen mit 27.22 kg und dem 1-RM. *RICHTIG.*  
+
+c) Der Zusammenhang zwischen der Anzahl Wiederholungen mit 27.22 kg und dem 1-RM ist schwach. *FALSCH. Der Zusammenhang ist stark.*   
+
+<br/>
+
+# SLR Kraft von Frauen 2 {.tabset}   
+
+Regressionsoutput für den Zusammenhang zwischen der Anzahl Wiederholungen mit 27.22 kg und dem 1-RM.   
+
+```{r}
+## jamovi ----------------------------------------------------------------------
+# jmv::linReg(
+#   data = strength,
+#   dep = "maxBP_kg",
+#   covs = "BP60",
+#   blocks = list(
+#     list("BP60")
+#   ),
+#   refLevels = list()
+# )
+
+## Base-R ----------------------------------------------------------------------
+strength_lm <- lm(maxBP_kg ~ BP60, data = strength)
+summary(strength_lm)
+```
+
+## Aufgabe
+
+a) Wenn die Koeffizienten eingesetzt werden, lautet die Regressionsgleichung
+
+$$1-RM = 28.82 + 0.676 \times Anzahl~Wiederholungen$$
+
+b) Die Steigung kann wie folgt interpretiert werden: Wenn die Anzahl Wiederholungen bis zur Erschöpfung um 1 ansteigt, erhöht sich das 1-RM um 0.676 kg.   
+c) Eine trainingsbedingte Steigerung der Wiederholungszahl mit 27.22 kg Gewicht von 15 auf 20 Wiederholungen bis zur Erschöpfung, bedeutet eine Zunahme des 1-RM von 38.96 kg auf 42.34 kg.  
+d) Eine Athletin, die 10 Wiederholungen mehr machen kann, als eine andere Athletin hat ein um 12.3 kg höheres 1-RM.   
+e) Die Prädiktorvariable kann in diesem Modell ca. 64% der Variabilität des 1-RM erklären.   
+f) Der Korrelationskoeffizient nach Pearson für den Zusammenhang zwischen der Anzahl Wiederholungen mit 27.22 kg und dem 1-RM ist $r = 8.02$.   
+
+<br/>
+
+## Lösung  
+
+a) Wenn die Koeffizienten eingesetzt werden, lautet die Regressionsgleichung. *RICHTIG.*
+
+$$1-RM = 28.82 + 0.676 \times Anzahl~Wiederholungen$$
+
+b) Die Steigung kann wie folgt interpretiert werden: Wenn die Anzahl Wiederholungen bis zur Erschöpfung um 1 Wiederholung erhöht, erhöht sich das 1-RM im Durchschnitt um 0.676 kg. *RICHTIG. $\beta_1$ = 0.67633*      
+
+c) Eine trainingsbedingte Steigerung der Wiederholungszahl mit 27.22 kg Gewicht von 15 auf 20 Wiederholungen bis zur Erschöpfung, bedeutet eine Zunahme des 1-RM im Durchschnitt von 38.96 kg auf 42.34 kg. *RICHTIG.*       
+
+d) Eine Athletin, die 10 Wiederholungen mehr machen kann, als eine andere Athletin hat im Durchschnitt ein um 12.3 kg höheres 1-RM. *FALSCH. Richig wäre 10 x 0.676 = 6.76 kg*   
+
+e) Die Prädiktorvariable erklärt in diesem Modell ca. 64% der Variabilität des 1-RM. *RICHTIG*   
+
+f) Der Korrelationskoeffizient nach Pearson für den Zusammenhang zwischen der Anzahl Wiederholungen mit 27.22 kg und dem 1-RM ist $r = 8.02$. *FALSCH. Der Korrelationskoeffizient kann nur Werte zwischen 0 und 1 annehmen. Er kann bei der einfachen linearen Regression als Quadratwurzel von $R^2$ berechnet werden. Hier $r$ = 0.802.*  
+
+<br/>
+
+# SLR Galton {.tabset}
+
+Besteht ein Zusammenhang zwischen der Körpergrösse von Eltern und ihren Kindern? Diese Frage ist in die Statistikgeschichte eingegangen. Francis Galton, ein britischer Wissenschaftler, hat sich Ende des 19. Jahrhunderts ausführlich damit beschäftigt und im Zuge seiner Forschungen den Begriff *Regression*, so wie wir in heute verwenden, begründet [1].   
+
+[1] GALTON, F., 1886, Regression towards mediocrity in hereditary stature. *Journal of the Anthropological Institute of Great Britain and Ireland*, 15, 246±263
+
+Laden Sie den Datensatz `galton.csv` in `jamovi` bzw. `R`. Es ist der berühmte Originaldatensatz von Francis Galton für 898 Kinder von 205 Familien aus dem Jahr 1886. Für diese Aufgabe arbeiten wir mit den Variablen `Height.cm` (Grösse der Kinder in cm) und `Parents.cm` (Durchschnittliche Grösse der beiden Eltern).
+
+Die Grafik zeigt den Zusammenhang zwischen der durchschnittlichen Körpergrösse der Eltern und der Körpergrösse der Kinder.
+
+
+```{r}
+# prepare dataset --------------------------------------------------------------
+# galton <- read_csv("./data/galton.csv")
+# 
+# galton.new <- galton %>% 
+#   mutate(
+#     Father.cm = Father * 2.54,
+#     Mother.cm = Mother * 2.54,
+#     Parents.cm = (Father.cm + Mother.cm)/2,
+#     Height.cm = Height * 2.54
+#   ) %>% 
+#   select(
+#     Family, Kids, Father.cm, Mother.cm, Parents.cm, Height.cm, Gender
+#   )
+# write_csv(galton.new, "./data/galton_new.csv")
+# ------------------------------------------------------------------------------
+```
+
+## Aufgabe
+
+a) Erstellen Sie eine Grafik für den Zusammenhang zwischen durchschnittlicher Körpergrösse der Eltern und der Körpergrösse ihrer Kinder. Speichern Sie die Grafik als .png-Datei und laden Sie sie hier hoch.  
+b) Erstellen Sie ein Regressionsmodell für den Zusammenhang zwischen der durchschnittlichen Körpergrösse der Eltern und der Körpergrösse ihrer Kinder. Wie gross ist die Steigung $\beta_1$ in diesem Modell.   
+c) Wie gross ist der Anteil der Variabilität in der Körpergrösse der Kinder, die durch die durchschnittliche Körpergrösse der Eltern erklärt werden kann?   
+
+## Lösung   
+
+a) Erstellen Sie eine Grafik für den Zusammenhang zwischen durchschnittlicher Körpergrösse der Eltern und der Körpergrösse ihrer Kinder. Speichern Sie die Grafik als .png-Datei und laden Sie sie hier hoch.  
+
+```{r}
+galton <- read_csv("./data/galton_new.csv")
+
+ggplot(galton, aes(x = Parents.cm, y = Height.cm)) +
+  geom_point(size = 3, alpha = .6, color = "steelblue") +
+  xlab("Durchschnittliche Grösse der Eltern (cm)") +
+  ylab("Grösse der Kinder (cm)") +
+  ggtitle("Zusammenhang zwischen Körpergrösse von Eltern und\nihren Kindern (Galton Datensatz, 1886)")
+
+plot(galton$Parents.cm, galton$Height.cm,
+     xlab = "Durchschnittsgrösse Eltern (cm)",
+     ylab = "Grösse Kinder (cm)",
+     main = "Zusammenhang Körpergrösse Eltern und Kindern")
+
+# Grafikdatei öffnen
+# png("galton.png")
+# 
+# plot(galton$Parents.cm, galton$Height.cm,
+#      xlab = "Durchschnittsgrösse Eltern (cm)",
+#      ylab = "Grösse Kinder (cm)",
+#      main = "Zusammenhang Körpergrösse Eltern und Kindern")
+# 
+# # Grafik schliessen
+# dev.off()
+```
+
+b) Erstellen Sie ein Regressionsmodell für den Zusammenhang zwischen der durchschnittlichen Körpergrösse der Eltern und der Körpergrösse ihrer Kinder. Wie gross ist die Steigung $\beta_1$ in diesem Modell (auf 4 Nachkommastellen gerundet).   
+
+```{r}
+galton_lm <- lm(Height.cm ~ Parents.cm, data = galton)
+summary(galton_lm)
+```
+
+c) Wie gross ist der Anteil der Variabilität in der Körpergrösse der Kinder, die durch die durchschnittliche Körpergrösse der Eltern erklärt werden kann? Bitte geben Sie ihr Resultat in Prozent, auf eine Nachkommastelle gerundet, an.  
 
